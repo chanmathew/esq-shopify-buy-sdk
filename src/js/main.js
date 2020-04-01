@@ -20,7 +20,7 @@ let cartOpen = false;
         domain: "esqido.com",
         storefrontAccessToken: "05f86644045cc5fc6cc10718814e3f31",
         productHandle: "gel-liner-pencil",
-        defaultOption: "2 Liners"
+        defaultOption: "2-Pack"
       },
       options
     );
@@ -52,7 +52,7 @@ let cartOpen = false;
       // Render loading spinner
       self.html(`
         <div class="productSpinner">
-          <img src="https://cdn.jsdelivr.net/gh/chanmathew/shopify-js-sdk-eyeliner@latest/spinner.svg" alt="Loading Checkout" />
+          <img src="https://cdn.shopify.com/s/files/1/0250/1519/files/spinner.svg?v=1585762796" alt="Loading Checkout" />
         </div>
       `);
       // Fetch product by product handle
@@ -115,7 +115,7 @@ let cartOpen = false;
               <button class="quantity-button quantity-up">+</button>
             </div>
             <button class="btn addToCart">
-              <img class="spinner" src="https://cdn.jsdelivr.net/gh/chanmathew/shopify-js-sdk-eyeliner@latest/spinner.svg" alt="Loading Checkout" />
+              <img class="spinner" src="https://cdn.shopify.com/s/files/1/0250/1519/files/spinner.svg?v=1585762796" alt="Loading Checkout" />
               <span class="addToCartText">Add To Bag</span>
             </button>
           </div>
@@ -131,7 +131,7 @@ let cartOpen = false;
               <button class="quantity-button quantity-up">+</button>
             </div>
             <button class="btn addToCart">
-              <img class="spinner" src="https://cdn.jsdelivr.net/gh/chanmathew/shopify-js-sdk-eyeliner@latest/spinner.svg" alt="Loading Checkout" />
+              <img class="spinner" src="https://cdn.shopify.com/s/files/1/0250/1519/files/spinner.svg?v=1585762796" alt="Loading Checkout" />
               <span class="addToCartText">Add To Bag</span>
             </button>
           </div>
@@ -174,15 +174,15 @@ let cartOpen = false;
         });
       }
     };
-    const createColors = function(unitOption) {
+    const createColors = function(productOption) {
       const optionsAndVariants = self.data("optionsAndVariants");
       const colorOptions = self.data("colorOptions");
       // Only render color swatches if it has color variants
-      if (colorOptions) {
+      if (colorOptions && productOption) {
         // Find the variants for the matching option
         const variants = optionsAndVariants.filter(
-          variant => variant.name === unitOption
-        )[0].variants;
+          variant => variant.name === productOption
+        )[0]?.variants;
         // Append new container for productVariants
         const optionsContainer = self.find(".productOptions");
         const variantContainer = self.find(".productVariants");
@@ -406,7 +406,7 @@ let cartOpen = false;
                 <p>Your bag's empty 🛍. Go shopping!</p>
             </div>
             <button id="checkoutButton" class="btn">
-              <img class="spinner" src="https://cdn.jsdelivr.net/gh/chanmathew/shopify-js-sdk-eyeliner@latest/spinner.svg" alt="Loading Checkout" />
+              <img class="spinner" src="https://cdn.shopify.com/s/files/1/0250/1519/files/spinner.svg?v=1585762796" alt="Loading Checkout" />
               <span id="checkoutButtonText">Checkout</span>
             </button>
           </div>

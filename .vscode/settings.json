@@ -1,5 +1,4 @@
 {
-    "editor.formatOnSave": true,
     "eslint.alwaysShowStatus": true,
     "eslint.format.enable": true,
     "vetur.format.defaultFormatter.js": "prettier-eslint"

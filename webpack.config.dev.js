@@ -20,6 +20,5 @@ module.exports = merge(common, {
       }
     ]
   },
-  plugins: [new webpack.HotModuleReplacementPlugin()],
-  devtool: "source-map"
+  plugins: [new webpack.HotModuleReplacementPlugin()]
 });
