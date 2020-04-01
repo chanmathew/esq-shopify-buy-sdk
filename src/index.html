@@ -1,31 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Esqido Product</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-    <script src="https://sdks.shopifycdn.com/js-buy-sdk/v2/latest/index.umd.min.js"></script>
-    <script src="js/main.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Esqido Product</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://sdks.shopifycdn.com/js-buy-sdk/v2/latest/index.umd.min.js"></script>
 </head>
+
 <body>
-    <div id="overlay"></div>
-    <div id="cart"></div>
-    <button id="openCart">Open Cart</button>
-    <span id="cartCount"></span>
-    <div id="product1" class="product"></div>
-    <div id="product2" class="product"></div>
-    <div id="product3" class="product"></div>
-    <div id="product4" class="product"></div>
-    <div id="product5" class="product"></div>
-    <script>
-        $(function () {
-            $('#product1').plugin({ productHandle: 'ravens-wing-lash-kit' });
-            $('#product2').plugin({ productHandle: 'little-black-lash', defaultOption: '2-Pairs' });
-            $('#product3').plugin({ productHandle: 'starter-bundle', defaultOption: 'With Black Liner' });
-            $('#product4').plugin({ productHandle: 'companion-lash-glue' });
-            $('#product5').plugin();
-        });
-    </script>
+  <div id="overlay"></div>
+  <div id="cart"></div>
+  <button id="openCart">Open Cart</button>
+  <span id="cartCount"></span>
+  <div id="product1" class="product"></div>
+  <div id="product2" class="product"></div>
+  <div id="product3" class="product"></div>
+  <div id="product4" class="product"></div>
+  <div id="product5" class="product"></div>
+  <script>
+    $(function () {
+      $('#product1').plugin({ productHandle: 'ravens-wing-lash-kit' });
+      $('#product2').plugin({ productHandle: 'little-black-lash', defaultOption: '2-Pairs' });
+      $('#product3').plugin({ productHandle: 'starter-bundle', defaultOption: 'With Black Liner' });
+      $('#product4').plugin({ productHandle: 'companion-lash-glue' });
+      $('#product5').plugin();
+    });
+  </script>
 </body>
+
 </html>

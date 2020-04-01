@@ -46,6 +46,7 @@
   height: 100%;
   margin: auto;
   font-weight: 700;
+  cursor: pointer;
 }
 .unit-option:checked {
   border-color: black;
@@ -103,6 +104,7 @@
   height: 100%;
   margin: 0;
   font-weight: 700;
+  cursor: pointer;
 }
 .variant-option:checked {
   border: 3px solid black;
@@ -132,7 +134,7 @@ input[type="number"] {
 }
 .quantity input,
 .quantity .quantity-button {
-  height: 43px;
+  height: 45px;
 }
 .quantity input {
   width: 45px;
@@ -149,10 +151,10 @@ input[type="number"] {
   font-size: 18px;
   font-weight: 300;
   width: 30px;
-  height: 45px;
   border-style: solid;
   border-color: #ccc;
   border-collapse: collapse;
+  background-color: #fff;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -165,9 +167,7 @@ input[type="number"] {
 .quantity .quantity-down {
   border-width: 1px 0px 1px 1px;
 }
-#cart .quantity input {
-  height: 30px;
-}
+#cart .quantity input,
 #cart .quantity-button {
   height: 32px;
 }

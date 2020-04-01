@@ -281,7 +281,6 @@ let cartOpen = false;
           // Else, select another option element
           const element = self.find(".unit-option");
           $.each(element, function(i, el) {
-            console.log("EL: ", el);
             if ($(el).data("value") !== settings.defaultOption) {
               $(el).attr("checked", true);
             }
@@ -517,6 +516,7 @@ let cartOpen = false;
       } else {
         $("#cartEmpty").show();
         $("#checkoutButton").hide();
+        $("#cartCount").text(0);
       }
     };
     const addItems = async function() {
@@ -553,7 +553,6 @@ let cartOpen = false;
           .then(function(checkout) {
             // Check to see if the item was added
             if (checkout.lineItems.length) {
-              console.log("Added to checkout: ", checkout);
               extractLineItems(checkout.lineItems);
             }
           })
@@ -581,7 +580,6 @@ let cartOpen = false;
       await client.checkout
         .removeLineItems(currentCheckoutId, itemsToRemove)
         .then(function(checkout) {
-          console.log("Removed from checkout: ", checkout);
           extractLineItems(checkout.lineItems);
         })
         .catch(error =>
@@ -611,7 +609,6 @@ let cartOpen = false;
       await client.checkout
         .updateLineItems(currentCheckoutId, itemsToUpdate)
         .then(function(checkout) {
-          console.log("Updated checkout: ", checkout);
           extractLineItems(checkout.lineItems);
         })
         .catch(error =>

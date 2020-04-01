@@ -67,6 +67,5 @@ module.exports = {
   ],
   stats: {
     colors: true
-  },
-  devtool: "source-map"
+  }
 };
