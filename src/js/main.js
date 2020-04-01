@@ -20,7 +20,9 @@ let cartOpen = false;
         domain: "esqido.com",
         storefrontAccessToken: "05f86644045cc5fc6cc10718814e3f31",
         productHandle: "gel-liner-pencil",
-        defaultOption: "2-Pack"
+        defaultOption: "2-Pack",
+        defaultCurrency: 'USD',
+        defaultRegion: 'en-US'
       },
       options
     );
@@ -215,11 +217,11 @@ let cartOpen = false;
     };
     // Render product variant pricing
     const createPrices = function(variant, container) {
-      if (variant && container) {
+    if (variant && container) {
         // If it's a single variant product
         const singleVariant = self.data("singleVariant");
         const formattedPrices = formatPrices(variant);
-        const { price, comparePrice, currencyCode } = formattedPrices;
+        const { price, comparePrice } = formattedPrices;
         $(container).append(`
         <p class="unit-price ${singleVariant ? "single-product-price" : ""} ${
           comparePrice > price ? "sale-price" : ""
@@ -228,7 +230,7 @@ let cartOpen = false;
             ? "<span class='unit-compare-price'>" + comparePrice + "</span>"
             : ""
         }
-        ${price} ${currencyCode}
+        ${price} ${settings.defaultCurrency === 'USD' ? settings.defaultCurrency : ''}
         </p>
         `);
       }
@@ -457,7 +459,6 @@ let cartOpen = false;
         $("#cartLineItems").empty();
       }
       const cartItems = fetchFromLocalStorage(lsCartId);
-      // console.log('Cart Items: ', cartItems)
       // Render items in checkout in cart
       if (cartItems?.length) {
         $("#checkoutButton").show();
@@ -467,7 +468,7 @@ let cartOpen = false;
           cartItems.map(function(item) {
             const { variant } = item;
             const formattedPrices = formatPrices(variant);
-            const { price, comparePrice, currencyCode } = formattedPrices;
+            const { price, comparePrice } = formattedPrices;
             $("#cartLineItems").append(`
               <div class="cart-item" data-value="${item.id}">
               ${
@@ -491,7 +492,7 @@ let cartOpen = false;
                         ? `<span class='unit-compare-price'>${comparePrice}</span>`
                         : ""
                     }
-                    ${price} ${currencyCode}</p>
+                    ${price} ${settings.defaultCurrency === 'USD' ? settings.defaultCurrency : ''}</p>
                   <div class="quantity">
                     <button class="quantity-button quantity-down">-</button>
                     <input class="qtySelector" type="number" min="0" value="${
@@ -568,7 +569,6 @@ let cartOpen = false;
       }
     };
     const removeItems = async function(variantId) {
-      console.log("Remove variants: ", variantId);
       // Reset the item count so it will rerender the cart from scratch
       itemCount = 0;
       // Set loading states for buttons
@@ -711,26 +711,34 @@ let cartOpen = false;
       $("body").toggleClass("cartOpen");
     };
     const formatPrices = function(variant) {
-      const { priceV2, compareAtPriceV2 } = variant;
-      let formattedPrice;
-      let formattedComparePrice;
-      // Formats prices currency format, supports multi-currency
-      const priceFormatter = new Intl.NumberFormat(undefined, {
-        style: "currency",
-        currency: priceV2.currencyCode,
-        maximumSignificantDigits: 4 // Trim any zeros after decimal
-      });
-      if (priceV2?.amount) {
-        formattedPrice = priceFormatter.format(priceV2.amount);
+      let variantPrices = null
+      if(variant && variant?.presentmentPrices?.length) {
+        const results = variant.presentmentPrices.filter(item => item.price.currencyCode === settings.defaultCurrency)
+        if(results?.length) {
+          variantPrices = results[0]
+        }
       }
-      if (compareAtPriceV2?.amount) {
-        formattedComparePrice = priceFormatter.format(compareAtPriceV2.amount);
-      }
-      return {
-        price: formattedPrice,
-        comparePrice: formattedComparePrice,
-        currencyCode: priceV2.currencyCode
-      };
+      if(variantPrices) {
+        const { price, compareAtPrice } = variantPrices;
+        let formattedPrice;
+        let formattedComparePrice;
+        // Formats prices currency format, supports multi-currency
+        const priceFormatter = new Intl.NumberFormat(settings.defaultRegion, {
+          style: "currency",
+          currency: settings.defaultCurrency,
+          maximumSignificantDigits: 4 // Trim any zeros after decimal
+        });
+        if (price?.amount) {
+          formattedPrice = priceFormatter.format(price.amount);
+        }
+        if (compareAtPrice?.amount) {
+          formattedComparePrice = priceFormatter.format(compareAtPrice.amount);
+        }
+        return {
+          price: formattedPrice,
+          comparePrice: formattedComparePrice
+        };
+      } 
     };
     /*
       Event Listeners 
