@@ -1,11 +1,11 @@
-const cssnano = require('cssnano');
-const merge = require('webpack-merge');
+const cssnano = require('cssnano')
+const merge = require('webpack-merge')
 
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin')
+const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
-const common = require('./webpack.config.common.js');
+const common = require('./webpack.config.common.js')
 
 module.exports = merge(common, {
   mode: 'production',
@@ -40,4 +40,4 @@ module.exports = merge(common, {
       canPrint: true,
     }),
   ],
-});
+})

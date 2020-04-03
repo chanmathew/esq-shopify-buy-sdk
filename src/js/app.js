@@ -1,4 +1,4 @@
 if (module.hot) {
-  module.hot.accept();
+  module.hot.accept()
 }
-import "./main.js";
+import './main.js'
