@@ -1,6 +1,9 @@
 {
-    "eslint.alwaysShowStatus": true,
-    "eslint.format.enable": true,
-    "vetur.format.defaultFormatter.js": "prettier-eslint",
-    "editor.formatOnSave": true
+  "eslint.alwaysShowStatus": true,
+  "javascript.validate.enable": false,
+  "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true
+  },
+  // requires only if you use vetur plugin
+  "vetur.validation.script": false,
 }
