@@ -382,7 +382,7 @@ let clientSettings
     }
     /*
       Event Listeners 
-     */
+    */
     const attachListeners = function () {
       const option = self.find('.unit-option')
       $(option).on('click', function (e) {
@@ -486,12 +486,11 @@ let clientSettings
             pricesContainer = container.find('.upsellItemPrices')[
               productOptionIndex
             ]
-            console.log(firstVariant, pricesContainer)
             createPrices(firstVariant, pricesContainer)
           })
         }
-        /* 
-          Event Listeners
+        /*
+          Event Listeners 
         */
         $('body').on('change', '.upsellProductOption', function (e) {
           const variant = recursiveArraySearch(
@@ -502,11 +501,7 @@ let clientSettings
           createPrices(variant, container)
         })
         self.find('.addToCart').on('click', function (e) {
-          const variantId = self.find('.upsellProductOption').val()
-          console.log(variantId)
-          if (variantId) {
-            addUpsellItem(variantId, 1)
-          }
+          addItems(self)
         })
       }
     }
@@ -706,6 +701,11 @@ let clientSettings
     }
   }
   const addUpsellItem = async function (variantId, qty = 1) {
+    // Reset the item count so it will rerender the cart from scratch
+    itemCount = 0
+    // Set loading states for buttons
+    setAddToCartLoading(true)
+    setCheckoutLoading(true)
     const quantity = parseInt(qty, 10)
     const itemsToAdd = [
       {
@@ -729,6 +729,7 @@ let clientSettings
       setCheckoutLoading(false)
       // Rerender cart
       createCartItems()
+      toggleCart()
     }
   }
   const addItems = async function (self) {
@@ -748,7 +749,11 @@ let clientSettings
     } else {
       // Get the current selected variant option and find the variant ID
       const options = self.find("input[type='radio']:checked")
-      selectedVariantId = options[options.length - 1]?.value
+      if (options?.length) {
+        selectedVariantId = options[options.length - 1]?.value
+      } else {
+        selectedVariantId = self.find('.upsellProductOption').val()
+      }
     }
     // Find the current specified quantity to add
     const qty = parseInt(self.find('.qtySelector').val(), 10)
@@ -756,7 +761,7 @@ let clientSettings
     const itemsToAdd = [
       {
         variantId: selectedVariantId,
-        quantity: qty,
+        quantity: qty ? qty : 1, // If there's no qtySelector set default to 1
       },
     ]
     if (currentCheckoutId) {
