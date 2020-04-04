@@ -310,3 +310,32 @@ body.cartOpen #cart {
   width: 24px;
   height: 24px;
 }
+.upsellItem {
+  display: flex;
+  align-items: center;
+  .upsellItemDetails {
+    flex: 1;
+  }
+  .upsellItemImage {
+    width: 100px;
+    height: auto;
+    margin-right: 1rem;
+  }
+  .upsellItemTitle {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin: 0 0 0.5rem 0;
+  }
+  .upsellItemPrices {
+    font-size: 0.9rem;
+    margin: 0 0 0.5rem 0;
+  }
+  .upsellProductOption {
+    margin-bottom: 0.5rem;
+  }
+  .addToCart {
+    font-size: 0.8rem;
+    height: 35px;
+    width: auto;
+  }
+}

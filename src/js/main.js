@@ -10,12 +10,14 @@ let itemCount = 0
 let lsCheckoutId = 'esq_eyeliner_checkout_id'
 let lsCartId = 'esq_eyeliner_cart'
 let cartOpen = false
+let client
+let clientSettings
 
-// Begin Plugin
+  // Begin Plugin
 ;(function ($) {
   $.fn.plugin = async function (options) {
     const self = this
-    const settings = $.extend(
+    clientSettings = $.extend(
       {
         domain: 'esqido.com',
         storefrontAccessToken: '05f86644045cc5fc6cc10718814e3f31',
@@ -28,7 +30,7 @@ let cartOpen = false
     )
     const setup = async function () {
       createClient()
-      await fetchProduct()
+      await fetchProduct(self, clientSettings.productHandle)
     }
     const initPlugin = async function () {
       createContainer()
@@ -43,65 +45,11 @@ let cartOpen = false
       initCount++
     }
     const createClient = function () {
-      const { domain, storefrontAccessToken } = settings
-      return (client = ShopifyBuy.buildClient({
+      const { domain, storefrontAccessToken } = clientSettings
+      client = ShopifyBuy.buildClient({
         domain,
         storefrontAccessToken,
-      }))
-    }
-    const fetchProduct = async function () {
-      const { productHandle } = settings
-      // Render loading spinner
-      self.html(`
-        <div class="productSpinner">
-          <img src="https://cdn.shopify.com/s/files/1/0250/1519/files/spinner.svg?v=1585762796" alt="Loading Checkout" />
-        </div>
-      `)
-      // Fetch product by product handle
-      await client.product
-        .fetchByHandle(productHandle)
-        .then((response) => {
-          const product = response
-          // Cache product data to memory
-          self.data('product', product)
-          // If product has unit and color options, save them to data
-          const unitOptions = getOptionValues('units')
-          const productOptions = product?.options
-            .filter((option) => option.name.toLowerCase() !== 'title')
-            .map((option) => option.name)
-          const colorOptions = getOptionValues('color')
-          const bundleOptions = getOptionValues('bundle')
-          const singleVariant = product?.variants?.length === 1
-          // Create a new array that contains the product variants grouped by unit options
-          let optionsAndVariants = []
-          if (unitOptions?.length) {
-            for (let index in unitOptions) {
-              let optionName = unitOptions[index]
-              let variants = recursiveArraySearch(product.variants, optionName)
-              optionsAndVariants.push({
-                name: optionName,
-                variants,
-              })
-            }
-          } else if (bundleOptions?.length) {
-            for (let index in bundleOptions) {
-              let optionName = bundleOptions[index]
-              let variants = recursiveArraySearch(product.variants, optionName)
-              optionsAndVariants.push({
-                name: optionName,
-                variants,
-              })
-            }
-          }
-          // Only cache them to data if the options exist
-          singleVariant && self.data('singleVariant', product?.variants[0])
-          productOptions?.length && self.data('productOptions', productOptions)
-          unitOptions?.length && self.data('unitOptions', unitOptions)
-          colorOptions?.length && self.data('colorOptions', colorOptions)
-          optionsAndVariants?.length &&
-            self.data('optionsAndVariants', optionsAndVariants)
-        })
-        .catch((error) => console.log("Couldn't fetch product: ", error))
+      })
     }
     const createContainer = function () {
       $('.productSpinner').hide()
@@ -118,7 +66,7 @@ let cartOpen = false
             </div>
             <button class="btn addToCart">
               <img class="spinner" src="https://cdn.shopify.com/s/files/1/0250/1519/files/spinner.svg?v=1585762796" alt="Loading Checkout" />
-              <span class="addToCartText">Add To Bag</span>
+              <span class="addToCartText">Add To Cart</span>
             </button>
           </div>
         `)
@@ -134,7 +82,7 @@ let cartOpen = false
             </div>
             <button class="btn addToCart">
               <img class="spinner" src="https://cdn.shopify.com/s/files/1/0250/1519/files/spinner.svg?v=1585762796" alt="Loading Checkout" />
-              <span class="addToCartText">Add To Bag</span>
+              <span class="addToCartText">Add To Cart</span>
             </button>
           </div>
         `)
@@ -148,7 +96,7 @@ let cartOpen = false
         createOptions()
       }
       if (colorOptions) {
-        createColors(settings.defaultOption)
+        createColors(clientSettings.defaultOption)
       }
     }
     // Render unit options
@@ -179,7 +127,7 @@ let cartOpen = false
           pricesContainer = container.find('.unit-option-label')[
             productOptionIndex
           ]
-          createPrices(firstVariant, pricesContainer)
+          createPrices(firstVariant, pricesContainer, clientSettings)
         })
       }
     }
@@ -222,28 +170,6 @@ let cartOpen = false
         })
       }
     }
-    // Render product variant pricing
-    const createPrices = function (variant, container) {
-      if (variant && container) {
-        // If it's a single variant product
-        const singleVariant = self.data('singleVariant')
-        const formattedPrices = formatPrices(variant)
-        const { price, comparePrice } = formattedPrices
-        $(container).append(`
-        <p class="unit-price ${singleVariant ? 'single-product-price' : ''} ${
-          comparePrice > price ? 'sale-price' : ''
-        }">${
-          comparePrice > price
-            ? "<span class='unit-compare-price'>" + comparePrice + '</span>'
-            : ''
-        }
-        ${price} ${
-          settings.defaultCurrency === 'USD' ? settings.defaultCurrency : ''
-        }
-        </p>
-        `)
-      }
-    }
     const setDefaultOption = function () {
       const singleVariant = self.data('singleVariant')
       const product = self.data('product')
@@ -256,7 +182,7 @@ let cartOpen = false
       if (optionsAndVariants) {
         // Find the unit option that matches the defaultOption defined in settings
         const defaultOptionElement = self.find(
-          `.unit-option[data-value='${settings.defaultOption}']`
+          `.unit-option[data-value='${clientSettings.defaultOption}']`
         )
         // Find all available variants
         const availableVariants = optionsAndVariants.reduce(
@@ -277,7 +203,7 @@ let cartOpen = false
         }
         // Find matching variantId in availableVariants array
         const matchFound = availableVariants.some((variant) =>
-          variant.title.includes(settings.defaultOption)
+          variant.title.includes(clientSettings.defaultOption)
         )
         // If found, select the defaultOptionElement
         if (matchFound) {
@@ -286,7 +212,7 @@ let cartOpen = false
           // Else, select another option element
           const element = self.find('.unit-option')
           $.each(element, function (i, el) {
-            if ($(el).data('value') !== settings.defaultOption) {
+            if ($(el).data('value') !== clientSettings.defaultOption) {
               $(el).attr('checked', true)
             }
           })
@@ -410,6 +336,7 @@ let cartOpen = false
               <img class="spinner" src="https://cdn.shopify.com/s/files/1/0250/1519/files/spinner.svg?v=1585762796" alt="Loading Checkout" />
               <span id="checkoutButtonText">Checkout</span>
             </button>
+            <div id="cartUpsells"></div>
           </div>
         `)
       }
@@ -453,294 +380,6 @@ let cartOpen = false
         }
       }
     }
-    const createCartItems = function () {
-      if (itemCount === 0) {
-        $('#cartLineItems').empty()
-      }
-      const cartItems = fetchFromLocalStorage(lsCartId)
-      // Render items in checkout in cart
-      if (cartItems?.length) {
-        $('#checkoutButton').show()
-        $('#cartEmpty').hide()
-        // For each item in cartItems, render until they've all been rendered
-        for (itemCount; itemCount <= cartItems.length - 1; ) {
-          cartItems.map(function (item) {
-            const { variant } = item
-            const formattedPrices = formatPrices(variant)
-            const { price, comparePrice } = formattedPrices
-            $('#cartLineItems').append(`
-              <div class="cart-item" data-value="${item.id}">
-              ${
-                variant?.image?.src
-                  ? `<img src="${variant.image.src}" alt="${variant.image?.altText}"/>`
-                  : `<img src="https://uploads-ssl.webflow.com/5e70f8e5d7461820999a0cf5/5e83a3654bfbfa1aa178d629_placeholder.jpg" alt="${item.title}"/>`
-              }
-                <div class="cart-item-details">
-                  <p class="cart-item-title">${item.title}</p>
-                  ${
-                    // Don't show the variant title if it's a single variant product
-                    item.subtitle.toLowerCase().includes('default title')
-                      ? ''
-                      : `<p class='cart-item-subtitle'>${item.subtitle}</p>`
-                  }
-                  <p class="cart-item-price unit-price ${
-                    comparePrice > price ? 'sale-price' : ''
-                  }">
-                    ${
-                      comparePrice > price
-                        ? `<span class='unit-compare-price'>${comparePrice}</span>`
-                        : ''
-                    }
-                    ${price} ${settings.defaultCurrency === 'USD' ? settings.defaultCurrency : ''}</p>
-                  <div class="quantity">
-                    <button class="quantity-button quantity-down">-</button>
-                    <input class="qtySelector" type="number" min="0" value="${
-                      item.quantity
-                    }" data-value="${variant.id}" />
-                    <button class="quantity-button quantity-up">+</button>
-                  </div>
-                  <span class="cart-item-remove" data-value="${
-                    item.id
-                  }">Remove</span>
-                </div>
-              </div>
-            `)
-            // Increment the item count so we know we rendered all the items and won't fire on subsequent instances
-            itemCount++
-          })
-          const totalCartQty = cartItems.reduce((acc, item) => {
-            return acc + item.quantity
-          }, 0)
-          $('#cartCount').text(totalCartQty)
-        }
-      } else {
-        $('#cartEmpty').show()
-        $('#checkoutButton').hide()
-        $('#cartCount').text(0)
-      }
-    }
-    const addItems = async function () {
-      // Reset the item count so it will rerender the cart from scratch
-      itemCount = 0
-      // Set loading states for buttons
-      setAddToCartLoading(true)
-      setCheckoutLoading(true)
-      // Check if the cart has any items to add
-      const currentCheckoutId = fetchFromLocalStorage(lsCheckoutId)
-      let selectedVariantId
-
-      // Check if the product is a single variant
-      const singleVariant = self.data('singleVariant')
-      if (singleVariant) {
-        selectedVariantId = singleVariant.id
-      } else {
-        // Get the current selected variant option and find the variant ID
-        const options = self.find("input[type='radio']:checked")
-        selectedVariantId = options[options.length - 1]?.value
-      }
-      // Find the current specified quantity to add
-      const qty = parseInt(self.find('.qtySelector').val(), 10)
-      // Format the line items for passing into checkout api
-      const itemsToAdd = [
-        {
-          variantId: selectedVariantId,
-          quantity: qty,
-        },
-      ]
-      if (currentCheckoutId) {
-        await client.checkout
-          .addLineItems(currentCheckoutId, itemsToAdd)
-          .then(function (checkout) {
-            // Check to see if the item was added
-            if (checkout.lineItems.length) {
-              extractLineItems(checkout.lineItems)
-            }
-          })
-          .catch((error) =>
-            console.log("Couldn't add item to checkout: ", error)
-          )
-        // Set loading states for buttons to false
-        setAddToCartLoading(false)
-        setCheckoutLoading(false)
-        // Rerender cart
-        createCartItems()
-        toggleCart()
-      }
-    }
-    const removeItems = async function (variantId) {
-      // Reset the item count so it will rerender the cart from scratch
-      itemCount = 0
-      // Set loading states for buttons
-      setCheckoutLoading(true)
-      // Check if the cart has any items to add
-      const currentCheckoutId = fetchFromLocalStorage(lsCheckoutId)
-      // Format the line items for passing into checkout api
-      const itemsToRemove = [variantId]
-      await client.checkout
-        .removeLineItems(currentCheckoutId, itemsToRemove)
-        .then(function (checkout) {
-          extractLineItems(checkout.lineItems)
-        })
-        .catch((error) =>
-          console.log("Couldn't remove item from checkout: ", error)
-        )
-      // Set loading states for buttons to false
-      setCheckoutLoading(false)
-      // Rerender cart
-      createCartItems()
-    }
-    const updateItems = async function (variantId, qty) {
-      // Reset the item count so it will rerender the cart from scratch
-      itemCount = 0
-      // Set loading states for buttons
-      setAddToCartLoading(true)
-      setCheckoutLoading(true)
-      // Check if the cart has any items to add
-      const currentCheckoutId = fetchFromLocalStorage(lsCheckoutId)
-      // Get the current selected variant option and find the variant ID
-      // Format the line items for passing into checkout api
-      const itemsToUpdate = [
-        {
-          id: variantId,
-          quantity: qty,
-        },
-      ]
-      await client.checkout
-        .updateLineItems(currentCheckoutId, itemsToUpdate)
-        .then(function (checkout) {
-          extractLineItems(checkout.lineItems)
-        })
-        .catch((error) =>
-          console.log("Couldn't update items in checkout: ", error)
-        )
-      // Set loading states for buttons to false
-      setAddToCartLoading(false)
-      setCheckoutLoading(false)
-      // Rerender cart
-      createCartItems()
-    }
-    const checkout = async function () {
-      setCheckoutLoading(true)
-      const currentCheckoutId = fetchFromLocalStorage(lsCheckoutId)
-      await client.checkout.fetch(currentCheckoutId).then((checkout) => {
-        // Do something with the checkout
-        if (checkout.webUrl) {
-          location.href = checkout.webUrl
-        }
-      })
-    }
-    /*
-      Helper Functions
-    */
-    const persistToLocalStorage = function (key, value) {
-      let valueJson = JSON.stringify(value)
-      localStorage.setItem(key, valueJson)
-    }
-    const fetchFromLocalStorage = function (key) {
-      return JSON.parse(localStorage.getItem(key))
-    }
-    const getOptionValues = function (name) {
-      const product = self.data('product')
-      if (product?.options) {
-        const productOptions = product.options.filter(
-          (option) => option.name.toLowerCase() === name
-        )
-        const values = productOptions[0]?.values.map((option) => option.value)
-        return values
-      }
-    }
-    const recursiveArraySearch = function (array, searchString) {
-      return array.filter(function search(row) {
-        return Object.keys(row).some((key) => {
-          if (typeof row[key] === 'string') {
-            return (
-              row[key].toLowerCase().indexOf(searchString.toLowerCase()) > -1
-            )
-          } else if (row[key] && typeof row[key] === 'object') {
-            return search(row[key])
-          }
-          return false
-        })
-      })
-    }
-    const persistTolocalStorage = function (key, value) {
-      var valueJson = JSON.stringify(value)
-      localStorage.setItem(key, valueJson)
-    }
-    const extractLineItems = function (lineItems) {
-      if (lineItems?.length) {
-        const newLineItems = lineItems.map((item) => {
-          return {
-            title: item.title,
-            subtitle: item.variant.title,
-            ...item,
-          }
-        })
-        persistToLocalStorage(lsCartId, newLineItems)
-      } else {
-        persistToLocalStorage(lsCartId, [])
-      }
-    }
-    const setAddToCartLoading = function (boolean) {
-      const element = $('.addToCart').not(':contains("Sold Out")')
-      if (element) {
-        if (boolean) {
-          element.attr('disabled', true)
-          element.find('.addToCartText').hide()
-          element.find('.spinner').show()
-        } else {
-          element.attr('disabled', false)
-          element.find('.spinner').hide()
-          element.find('.addToCartText').show()
-        }
-      }
-    }
-    const setCheckoutLoading = function (boolean) {
-      if (boolean) {
-        $('#checkoutButton').attr('disabled', true)
-        $('#checkoutButtonText').hide()
-        $('#checkoutButton .spinner').show()
-      } else {
-        $('#checkoutButton').attr('disabled', false)
-        $('#checkoutButton .spinner').hide()
-        $('#checkoutButtonText').show()
-      }
-    }
-    const toggleCart = function () {
-      $('body').toggleClass('cartOpen')
-    }
-    const formatPrices = function (variant) {
-      let variantPrices = null
-      if (variant && variant?.presentmentPrices?.length) {
-        const results = variant.presentmentPrices.filter(
-          (item) => item.price.currencyCode === settings.defaultCurrency
-        )
-        if (results?.length) {
-          variantPrices = results[0]
-        }
-      }
-      if (variantPrices) {
-        const { price, compareAtPrice } = variantPrices
-        let formattedPrice
-        let formattedComparePrice
-        // Formats prices currency format, supports multi-currency
-        const priceFormatter = new Intl.NumberFormat(settings.defaultRegion, {
-          style: 'currency',
-          currency: settings.defaultCurrency,
-          maximumSignificantDigits: 4, // Trim any zeros after decimal
-        })
-        if (price?.amount) {
-          formattedPrice = priceFormatter.format(price.amount)
-        }
-        if (compareAtPrice?.amount) {
-          formattedComparePrice = priceFormatter.format(compareAtPrice.amount)
-        }
-        return {
-          price: formattedPrice,
-          comparePrice: formattedComparePrice,
-        }
-      }
-    }
     /*
       Event Listeners 
      */
@@ -766,7 +405,7 @@ let cartOpen = false
       }
       // Add to cart handler
       self.find('.addToCart').on('click', function (e) {
-        addItems()
+        addItems(self)
       })
       // Handle removing line items in cart
       $('body').on('click', '.cart-item-remove', function (e) {
@@ -791,5 +430,479 @@ let cartOpen = false
     if (product) {
       await initPlugin()
     }
+  }
+  $.fn.pluginUpsell = async function (options) {
+    const self = this
+    const upsellSettings = $.extend(
+      {
+        productHandle: 'peace-and-love',
+      },
+      options
+    )
+    if (!client) {
+      console.log('Please initialize Client first.')
+    } else {
+      await fetchProduct(self, upsellSettings.productHandle)
+      const product = self.data('product')
+      if (product) {
+        const optionsAndVariants = self.data('optionsAndVariants')
+        console.log('Product options & variants: ', optionsAndVariants)
+        const firstImage = product.images[0]
+        self.append(`
+          <div class="upsellItem">
+            <img class="upsellItemImage" src="${firstImage.src}" alt="${firstImage.altText}">
+            <div class="upsellItemDetails">
+              <p class="upsellItemTitle">${product.title}</p>
+              <select class="upsellProductOption"></select>
+              <p class="upsellItemPrices"></p>
+              </div>
+              <button class="btn addToCart">
+                <img class="spinner" src="https://cdn.shopify.com/s/files/1/0250/1519/files/spinner.svg?v=1585762796" alt="Loading Checkout" />
+                <span class="addToCartText">Add</span>
+              </button>
+            </div>
+          </div>
+        `)
+        if (optionsAndVariants) {
+          $.each(optionsAndVariants, function (
+            productOptionIndex,
+            productOption
+          ) {
+            const dropdown = self.find('.upsellProductOption')
+            const container = self.find('.upsellItem')
+            const id = self.attr('id')
+            const firstVariant = productOption.variants[0]
+            // First create the label and input for each product option
+            $(dropdown).append(`
+              <option class="unit-option" value='${
+                firstVariant.id
+              }' data-value='${productOption.name}' ${
+              !firstVariant.available ? 'disabled' : ''
+            }>
+                ${productOption.name}
+              </option>
+            `)
+            // Get the price of any variant within that product option
+            pricesContainer = container.find('.upsellItemPrices')[
+              productOptionIndex
+            ]
+            console.log(firstVariant, pricesContainer)
+            createPrices(firstVariant, pricesContainer)
+          })
+        }
+        /* 
+          Event Listeners
+        */
+        $('body').on('change', '.upsellProductOption', function (e) {
+          const variant = recursiveArraySearch(
+            product.variants,
+            e.target.value
+          )[0]
+          const container = self.find('.upsellItemPrices').empty()
+          createPrices(variant, container)
+        })
+        self.find('.addToCart').on('click', function (e) {
+          const variantId = self.find('.upsellProductOption').val()
+          console.log(variantId)
+          if (variantId) {
+            addUpsellItem(variantId, 1)
+          }
+        })
+      }
+    }
+  }
+  /*
+      Helper Functions
+    */
+  const persistToLocalStorage = function (key, value) {
+    let valueJson = JSON.stringify(value)
+    localStorage.setItem(key, valueJson)
+  }
+  const fetchFromLocalStorage = function (key) {
+    return JSON.parse(localStorage.getItem(key))
+  }
+  const persistTolocalStorage = function (key, value) {
+    var valueJson = JSON.stringify(value)
+    localStorage.setItem(key, valueJson)
+  }
+  const extractLineItems = function (lineItems) {
+    if (lineItems?.length) {
+      const newLineItems = lineItems.map((item) => {
+        return {
+          title: item.title,
+          subtitle: item.variant.title,
+          ...item,
+        }
+      })
+      persistToLocalStorage(lsCartId, newLineItems)
+    } else {
+      persistToLocalStorage(lsCartId, [])
+    }
+  }
+  const setAddToCartLoading = function (boolean) {
+    const element = $('.addToCart').not(':contains("Sold Out")')
+    if (element) {
+      if (boolean) {
+        element.attr('disabled', true)
+        element.find('.addToCartText').hide()
+        element.find('.spinner').show()
+      } else {
+        element.attr('disabled', false)
+        element.find('.spinner').hide()
+        element.find('.addToCartText').show()
+      }
+    }
+  }
+  const setCheckoutLoading = function (boolean) {
+    if (boolean) {
+      $('#checkoutButton').attr('disabled', true)
+      $('#checkoutButtonText').hide()
+      $('#checkoutButton .spinner').show()
+    } else {
+      $('#checkoutButton').attr('disabled', false)
+      $('#checkoutButton .spinner').hide()
+      $('#checkoutButtonText').show()
+    }
+  }
+  const toggleCart = function () {
+    $('body').toggleClass('cartOpen')
+  }
+  const formatPrices = function (variant) {
+    let variantPrices = null
+    if (variant && variant?.presentmentPrices?.length) {
+      const results = variant.presentmentPrices.filter(
+        (item) => item.price.currencyCode === clientSettings.defaultCurrency
+      )
+      if (results?.length) {
+        variantPrices = results[0]
+      }
+    }
+    if (variantPrices) {
+      const { price, compareAtPrice } = variantPrices
+      let formattedPrice
+      let formattedComparePrice
+      // Formats prices currency format, supports multi-currency
+      const priceFormatter = new Intl.NumberFormat(
+        clientSettings.defaultRegion,
+        {
+          style: 'currency',
+          currency: clientSettings.defaultCurrency,
+          maximumSignificantDigits: 4, // Trim any zeros after decimal
+        }
+      )
+      if (price?.amount) {
+        formattedPrice = priceFormatter.format(price.amount)
+      }
+      if (compareAtPrice?.amount) {
+        formattedComparePrice = priceFormatter.format(compareAtPrice.amount)
+      }
+      return {
+        price: formattedPrice,
+        comparePrice: formattedComparePrice,
+      }
+    }
+  }
+  // Render product variant pricing
+  const createPrices = function (variant, container) {
+    if (variant && container) {
+      // If it's a single variant product
+      const singleVariant = variant.length === 1
+      const formattedPrices = formatPrices(variant)
+      if (formattedPrices) {
+        const { price, comparePrice } = formattedPrices
+        $(container).append(`
+          <p class="unit-price ${singleVariant ? 'single-product-price' : ''} ${
+          comparePrice > price ? 'sale-price' : ''
+        }">${
+          comparePrice > price
+            ? "<span class='unit-compare-price'>" + comparePrice + '</span>'
+            : ''
+        }
+          ${price} ${
+          clientSettings.defaultCurrency === 'USD'
+            ? clientSettings.defaultCurrency
+            : ''
+        }
+          </p>
+        `)
+      }
+    }
+  }
+  const getOptionValues = function (product, name) {
+    if (product?.options) {
+      const productOptions = product.options.filter(
+        (option) => option.name.toLowerCase() === name
+      )
+      const values = productOptions[0]?.values.map((option) => option.value)
+      return values
+    }
+  }
+  const recursiveArraySearch = function (array, searchString) {
+    return array.filter(function search(row) {
+      return Object.keys(row).some((key) => {
+        if (typeof row[key] === 'string') {
+          return row[key].toLowerCase().indexOf(searchString.toLowerCase()) > -1
+        } else if (row[key] && typeof row[key] === 'object') {
+          return search(row[key])
+        }
+        return false
+      })
+    })
+  }
+  const fetchProduct = async function (container, productHandle) {
+    if (container && productHandle) {
+      const self = $(container)
+      // Render loading spinner
+      self.html(`
+      <div class="productSpinner">
+        <img src="https://cdn.shopify.com/s/files/1/0250/1519/files/spinner.svg?v=1585762796" alt="Loading Checkout" />
+      </div>
+    `)
+      // Fetch product by product handle
+      await client.product
+        .fetchByHandle(productHandle)
+        .then((response) => {
+          const product = response
+          // Cache product data to memory
+          self.data('product', product)
+          // If product has unit and color options, save them to data
+          const unitOptions = getOptionValues(product, 'units')
+          const productOptions = product?.options
+            .filter((option) => option.name.toLowerCase() !== 'title')
+            .map((option) => option.name)
+          const colorOptions = getOptionValues(product, 'color')
+          const bundleOptions = getOptionValues(product, 'bundle')
+          const singleVariant = product?.variants?.length === 1
+          // Create a new array that contains the product variants grouped by unit options
+          let optionsAndVariants = []
+          if (unitOptions?.length) {
+            for (let index in unitOptions) {
+              let optionName = unitOptions[index]
+              let variants = recursiveArraySearch(product.variants, optionName)
+              optionsAndVariants.push({
+                name: optionName,
+                variants,
+              })
+            }
+          } else if (bundleOptions?.length) {
+            for (let index in bundleOptions) {
+              let optionName = bundleOptions[index]
+              let variants = recursiveArraySearch(product.variants, optionName)
+              optionsAndVariants.push({
+                name: optionName,
+                variants,
+              })
+            }
+          }
+          // Only cache them to data if the options exist
+          singleVariant && self.data('singleVariant', product?.variants[0])
+          productOptions?.length && self.data('productOptions', productOptions)
+          unitOptions?.length && self.data('unitOptions', unitOptions)
+          colorOptions?.length && self.data('colorOptions', colorOptions)
+          optionsAndVariants?.length &&
+            self.data('optionsAndVariants', optionsAndVariants)
+        })
+        .catch((error) => console.log("Couldn't fetch product: ", error))
+    }
+  }
+  const addUpsellItem = async function (variantId, qty = 1) {
+    const quantity = parseInt(qty, 10)
+    const itemsToAdd = [
+      {
+        variantId,
+        quantity,
+      },
+    ]
+    const currentCheckoutId = fetchFromLocalStorage(lsCheckoutId)
+    if (currentCheckoutId) {
+      await client.checkout
+        .addLineItems(currentCheckoutId, itemsToAdd)
+        .then(function (checkout) {
+          // Check to see if the item was added
+          if (checkout.lineItems.length) {
+            extractLineItems(checkout.lineItems)
+          }
+        })
+        .catch((error) => console.log("Couldn't add item to checkout: ", error))
+      // Set loading states for buttons to false
+      setAddToCartLoading(false)
+      setCheckoutLoading(false)
+      // Rerender cart
+      createCartItems()
+    }
+  }
+  const addItems = async function (self) {
+    // Reset the item count so it will rerender the cart from scratch
+    itemCount = 0
+    // Set loading states for buttons
+    setAddToCartLoading(true)
+    setCheckoutLoading(true)
+    // Check if the cart has any items to add
+    const currentCheckoutId = fetchFromLocalStorage(lsCheckoutId)
+    let selectedVariantId
+
+    // Check if the product is a single variant
+    const singleVariant = self.data('singleVariant')
+    if (singleVariant) {
+      selectedVariantId = singleVariant.id
+    } else {
+      // Get the current selected variant option and find the variant ID
+      const options = self.find("input[type='radio']:checked")
+      selectedVariantId = options[options.length - 1]?.value
+    }
+    // Find the current specified quantity to add
+    const qty = parseInt(self.find('.qtySelector').val(), 10)
+    // Format the line items for passing into checkout api
+    const itemsToAdd = [
+      {
+        variantId: selectedVariantId,
+        quantity: qty,
+      },
+    ]
+    if (currentCheckoutId) {
+      await client.checkout
+        .addLineItems(currentCheckoutId, itemsToAdd)
+        .then(function (checkout) {
+          // Check to see if the item was added
+          if (checkout.lineItems.length) {
+            extractLineItems(checkout.lineItems)
+          }
+        })
+        .catch((error) => console.log("Couldn't add item to checkout: ", error))
+      // Set loading states for buttons to false
+      setAddToCartLoading(false)
+      setCheckoutLoading(false)
+      // Rerender cart
+      createCartItems()
+      toggleCart()
+    }
+  }
+  const createCartItems = function () {
+    if (itemCount === 0) {
+      $('#cartLineItems').empty()
+    }
+    const cartItems = fetchFromLocalStorage(lsCartId)
+    // Render items in checkout in cart
+    if (cartItems?.length) {
+      $('#checkoutButton').show()
+      $('#cartEmpty').hide()
+      // For each item in cartItems, render until they've all been rendered
+      for (itemCount; itemCount <= cartItems.length - 1; ) {
+        cartItems.map(function (item) {
+          const { variant } = item
+          const formattedPrices = formatPrices(variant)
+          const { price, comparePrice } = formattedPrices
+          $('#cartLineItems').append(`
+            <div class="cart-item" data-value="${item.id}">
+            ${
+              variant?.image?.src
+                ? `<img src="${variant.image.src}" alt="${variant.image?.altText}"/>`
+                : `<img src="https://uploads-ssl.webflow.com/5e70f8e5d7461820999a0cf5/5e83a3654bfbfa1aa178d629_placeholder.jpg" alt="${item.title}"/>`
+            }
+              <div class="cart-item-details">
+                <p class="cart-item-title">${item.title}</p>
+                ${
+                  // Don't show the variant title if it's a single variant product
+                  item.subtitle.toLowerCase().includes('default title')
+                    ? ''
+                    : `<p class='cart-item-subtitle'>${item.subtitle}</p>`
+                }
+                <p class="cart-item-price unit-price ${
+                  comparePrice > price ? 'sale-price' : ''
+                }">
+                  ${
+                    comparePrice > price
+                      ? `<span class='unit-compare-price'>${comparePrice}</span>`
+                      : ''
+                  }
+                  ${price} ${clientSettings.defaultCurrency === 'USD' ? clientSettings.defaultCurrency : ''}</p>
+                <div class="quantity">
+                  <button class="quantity-button quantity-down">-</button>
+                  <input class="qtySelector" type="number" min="0" value="${
+                    item.quantity
+                  }" data-value="${variant.id}" />
+                  <button class="quantity-button quantity-up">+</button>
+                </div>
+                <span class="cart-item-remove" data-value="${
+                  item.id
+                }">Remove</span>
+              </div>
+            </div>
+          `)
+          // Increment the item count so we know we rendered all the items and won't fire on subsequent instances
+          itemCount++
+        })
+        const totalCartQty = cartItems.reduce((acc, item) => {
+          return acc + item.quantity
+        }, 0)
+        $('#cartCount').text(totalCartQty)
+      }
+    } else {
+      $('#cartEmpty').show()
+      $('#checkoutButton').hide()
+      $('#cartCount').text(0)
+    }
+  }
+  const removeItems = async function (variantId) {
+    // Reset the item count so it will rerender the cart from scratch
+    itemCount = 0
+    // Set loading states for buttons
+    setCheckoutLoading(true)
+    // Check if the cart has any items to add
+    const currentCheckoutId = fetchFromLocalStorage(lsCheckoutId)
+    // Format the line items for passing into checkout api
+    const itemsToRemove = [variantId]
+    await client.checkout
+      .removeLineItems(currentCheckoutId, itemsToRemove)
+      .then(function (checkout) {
+        extractLineItems(checkout.lineItems)
+      })
+      .catch((error) =>
+        console.log("Couldn't remove item from checkout: ", error)
+      )
+    // Set loading states for buttons to false
+    setCheckoutLoading(false)
+    // Rerender cart
+    createCartItems()
+  }
+  const updateItems = async function (variantId, qty) {
+    // Reset the item count so it will rerender the cart from scratch
+    itemCount = 0
+    // Set loading states for buttons
+    setAddToCartLoading(true)
+    setCheckoutLoading(true)
+    // Check if the cart has any items to add
+    const currentCheckoutId = fetchFromLocalStorage(lsCheckoutId)
+    // Get the current selected variant option and find the variant ID
+    // Format the line items for passing into checkout api
+    const itemsToUpdate = [
+      {
+        id: variantId,
+        quantity: qty,
+      },
+    ]
+    await client.checkout
+      .updateLineItems(currentCheckoutId, itemsToUpdate)
+      .then(function (checkout) {
+        extractLineItems(checkout.lineItems)
+      })
+      .catch((error) =>
+        console.log("Couldn't update items in checkout: ", error)
+      )
+    // Set loading states for buttons to false
+    setAddToCartLoading(false)
+    setCheckoutLoading(false)
+    // Rerender cart
+    createCartItems()
+  }
+  const checkout = async function () {
+    setCheckoutLoading(true)
+    const currentCheckoutId = fetchFromLocalStorage(lsCheckoutId)
+    await client.checkout.fetch(currentCheckoutId).then((checkout) => {
+      // Do something with the checkout
+      if (checkout.webUrl) {
+        location.href = checkout.webUrl
+      }
+    })
   }
 })(jQuery)

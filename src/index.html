@@ -15,17 +15,13 @@
   <button id="openCart">Open Cart</button>
   <span id="cartCount"></span>
   <div id="product1" class="product"></div>
-  <div id="product2" class="product"></div>
-  <div id="product3" class="product"></div>
-  <div id="product4" class="product"></div>
-  <div id="product5" class="product"></div>
+  <div id="upsell1" class="product"></div>
   <script>
     $(function () {
-      $('#product1').plugin({ productHandle: 'ravens-wing-lash-kit' });
-      $('#product2').plugin({ productHandle: 'little-black-lash', defaultOption: '2-Pairs' });
-      $('#product3').plugin({ productHandle: 'starter-bundle', defaultOption: 'With Black Liner' });
-      $('#product4').plugin({ productHandle: 'companion-lash-glue' });
-      $('#product5').plugin();
+      $('#product1').plugin();
+      $('#upsell1').pluginUpsell({
+        productHandle: 'peace-and-love'
+      });
     });
   </script>
 </body>
