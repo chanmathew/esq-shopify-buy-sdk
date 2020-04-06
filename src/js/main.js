@@ -3,6 +3,7 @@
   Author: Mathew Chan. 
   All Rights Reserved. 
 */
+import 'arrive'
 
 // Define variables
 let initCount = 0
@@ -10,6 +11,7 @@ let itemCount = 0
 let lsCheckoutId = 'esq_eyeliner_checkout_id'
 let lsCartId = 'esq_eyeliner_cart'
 let cartOpen = false
+let modalOpen = false
 let client
 let clientSettings
 
@@ -124,7 +126,7 @@ let clientSettings
             </label>
           `)
           // Get the price of any variant within that product option
-          pricesContainer = container.find('.unit-option-label')[
+          const pricesContainer = container.find('.unit-option-label')[
             productOptionIndex
           ]
           createPrices(firstVariant, pricesContainer, clientSettings)
@@ -319,25 +321,22 @@ let clientSettings
     */
     const createCart = function () {
       if (initCount === 0) {
-        $('#cart').empty().append(`
-          <div id="cartWrapper">
-            <div id="cartHeader">
-              <h3>Your Bag</h3>
-              <button id="closeCart">
-                <img src="https://uploads-ssl.webflow.com/5e70f8e5d7461820999a0cf5/5e7b70d9dd8fc24bf01bc3be_close.svg" alt="Close Bag" />
-              </button>
-            </div>
-            <div id="cartLineItems">
-            </div>
-            <div id="cartEmpty">
-                <p>Your bag's empty 🛍. Go shopping!</p>
-            </div>
-            <button id="checkoutButton" class="btn">
-              <img class="spinner" src="https://cdn.shopify.com/s/files/1/0250/1519/files/spinner.svg?v=1585762796" alt="Loading Checkout" />
-              <span id="checkoutButtonText">Checkout</span>
+        $('#cartWrapper').empty().append(`
+          <div id="cartHeader">
+            <h3>Your Bag</h3>
+            <button id="closeCart">
+              <img src="https://uploads-ssl.webflow.com/5e70f8e5d7461820999a0cf5/5e7b70d9dd8fc24bf01bc3be_close.svg" alt="Close Bag" />
             </button>
-            <div id="cartUpsells"></div>
           </div>
+          <div id="cartLineItems">
+          </div>
+          <div id="cartEmpty">
+              <p>Your bag's empty 🛍. Go shopping!</p>
+          </div>
+          <button id="checkoutButton" class="btn">
+            <img class="spinner" src="https://cdn.shopify.com/s/files/1/0250/1519/files/spinner.svg?v=1585762796" alt="Loading Checkout" />
+            <span id="checkoutButtonText">Checkout</span>
+          </button>
         `)
       }
     }
@@ -395,13 +394,18 @@ let clientSettings
         // Toggle cart drawer
         $('body').on(
           'click',
-          '#openCart, #overlay, .addToCart, #closeCart',
+          '#overlay, #openCart, .addToCart, #closeCart',
           function (e) {
             event.stopPropagation()
             event.stopImmediatePropagation()
             toggleCart()
           }
         )
+        $('body').on('click', '#modalOverlay', function (e) {
+          event.stopPropagation()
+          event.stopImmediatePropagation()
+          toggleModal()
+        })
       }
       // Add to cart handler
       self.find('.addToCart').on('click', function (e) {
@@ -446,19 +450,45 @@ let clientSettings
       const product = self.data('product')
       if (product) {
         const optionsAndVariants = self.data('optionsAndVariants')
-        console.log('Product options & variants: ', optionsAndVariants)
         const firstImage = product.images[0]
-        self.append(`
+        if (initCount === 0) {
+          $(self).append(`
+            <h3 class="cartUpsellTitle">You might also like</h3>
+          `)
+        }
+        $('#cartUpsells').append(`
           <div class="upsellItem">
             <img class="upsellItemImage" src="${firstImage.src}" alt="${firstImage.altText}">
             <div class="upsellItemDetails">
-              <p class="upsellItemTitle">${product.title}</p>
+              <a class="upsellItemTitle">${product.title}</a>
               <select class="upsellProductOption"></select>
               <p class="upsellItemPrices"></p>
+            </div>
+            <button class="btn addToCart">
+              <img class="spinner" src="https://cdn.shopify.com/s/files/1/0250/1519/files/spinner.svg?v=1585762796" alt="Loading Checkout" />
+              <span class="addToCartText">Add</span>
+            </button>
+          </div>
+        `)
+        $('body').append(`
+          <div id="modalOverlay"></div>
+          <div id="upsellItemModal">
+            <div id="upsellModalContainer">
+              <div class="upsellItemImageContainer">
+                <img class="upsellItemImage" src="${firstImage.src}" alt="${firstImage.altText}">
               </div>
-              <button class="btn addToCart">
-                <img class="spinner" src="https://cdn.shopify.com/s/files/1/0250/1519/files/spinner.svg?v=1585762796" alt="Loading Checkout" />
-                <span class="addToCartText">Add</span>
+              <div class="upsellItemDetails">
+                <a class="upsellItemTitle">${product.title}</a>
+                <select class="upsellProductOption"></select>
+                <p class="upsellItemPrices"></p>
+                <p class="upsellItemDescription">${product.description}</p>
+                <button class="btn addToCart">
+                  <img class="spinner" src="https://cdn.shopify.com/s/files/1/0250/1519/files/spinner.svg?v=1585762796" alt="Loading Checkout" />
+                  <span class="addToCartText">Add To Cart</span>
+                </button>
+              </div>
+              <button id="closeModal">
+                <img src="https://uploads-ssl.webflow.com/5e70f8e5d7461820999a0cf5/5e7b70d9dd8fc24bf01bc3be_close.svg" alt="Close Bag" />
               </button>
             </div>
           </div>
@@ -468,7 +498,7 @@ let clientSettings
             productOptionIndex,
             productOption
           ) {
-            const dropdown = self.find('.upsellProductOption')
+            const dropdown = $('body').find('.upsellProductOption')
             const container = self.find('.upsellItem')
             const id = self.attr('id')
             const firstVariant = productOption.variants[0]
@@ -483,16 +513,20 @@ let clientSettings
               </option>
             `)
             // Get the price of any variant within that product option
-            pricesContainer = container.find('.upsellItemPrices')[
+            const pricesContainer = container.find('.upsellItemPrices')[
               productOptionIndex
             ]
+            const modalContainer = $('#upsellItemModal').find(
+              '.upsellItemPrices'
+            )[productOptionIndex]
             createPrices(firstVariant, pricesContainer)
+            createPrices(firstVariant, modalContainer)
           })
         }
         /*
           Event Listeners 
         */
-        $('body').on('change', '.upsellProductOption', function (e) {
+        $('#cart').on('change', '.upsellProductOption', function (e) {
           const variant = recursiveArraySearch(
             product.variants,
             e.target.value
@@ -500,8 +534,24 @@ let clientSettings
           const container = self.find('.upsellItemPrices').empty()
           createPrices(variant, container)
         })
+        $('#upsellItemModal').on('change', '.upsellProductOption', function (
+          e
+        ) {
+          const variant = recursiveArraySearch(
+            product.variants,
+            e.target.value
+          )[0]
+          const container = $('#upsellItemModal')
+            .find('.upsellItemPrices')
+            .empty()
+          console.log(container)
+          createPrices(variant, container)
+        })
         self.find('.addToCart').on('click', function (e) {
           addItems(self)
+        })
+        $('body').on('click', '.upsellItemTitle, #closeModal', function (e) {
+          toggleModal()
         })
       }
     }
@@ -509,6 +559,14 @@ let clientSettings
   /*
       Helper Functions
     */
+  const toggleModal = function () {
+    if (cartOpen) {
+      toggleCart()
+    }
+    modalOpen = !modalOpen
+    $('body').toggleClass('modalOpen')
+    $('#upsellItemModal').fadeToggle()
+  }
   const persistToLocalStorage = function (key, value) {
     let valueJson = JSON.stringify(value)
     localStorage.setItem(key, valueJson)
@@ -560,6 +618,7 @@ let clientSettings
     }
   }
   const toggleCart = function () {
+    cartOpen = !cartOpen
     $('body').toggleClass('cartOpen')
   }
   const formatPrices = function (variant) {

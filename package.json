@@ -57,5 +57,7 @@
     "> 1%",
     "last 2 versions"
   ],
-  "dependencies": {}
+  "dependencies": {
+    "arrive": "^2.4.1"
+  }
 }
