@@ -8,6 +8,7 @@ import 'arrive'
 // Define variables
 let initCount = 0
 let itemCount = 0
+let slickInitCount = 0
 let lsCheckoutId = 'esq_eyeliner_checkout_id'
 let lsCartId = 'esq_eyeliner_cart'
 let cartOpen = false
@@ -474,8 +475,8 @@ let clientSettings
           <div id="modalOverlay"></div>
           <div id="upsellItemModal">
             <div id="upsellModalContainer">
-              <div class="upsellItemImageContainer">
-                <img class="upsellItemImage" src="${firstImage.src}" alt="${firstImage.altText}">
+              <div class="upsellItemGalleryContainer">
+                <div class="upsellItemGallery"></div>
               </div>
               <div class="upsellItemDetails">
                 <a class="upsellItemTitle">${product.title}</a>
@@ -493,6 +494,14 @@ let clientSettings
             </div>
           </div>
         `)
+        const galleryContainer = $('#upsellItemModal').find(
+          '.upsellItemGallery'
+        )
+        $.each(product.images, function (i, img) {
+          $(galleryContainer).append(`
+          <img class="upsellItemImage" src="${img.src}" alt="${img.altText}">
+          `)
+        })
         if (optionsAndVariants) {
           $.each(optionsAndVariants, function (
             productOptionIndex,
@@ -566,6 +575,13 @@ let clientSettings
     modalOpen = !modalOpen
     $('body').toggleClass('modalOpen')
     $('#upsellItemModal').fadeToggle()
+    if (modalOpen && slickInitCount === 0) {
+      $('.upsellItemGallery').slick({
+        arrows: false,
+        dots: true,
+      })
+      slickInitCount++
+    }
   }
   const persistToLocalStorage = function (key, value) {
     let valueJson = JSON.stringify(value)

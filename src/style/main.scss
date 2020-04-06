@@ -1,3 +1,6 @@
+@import "slick.scss";
+@import "slick-theme.scss";
+
 .product {
   font-family: "Mont", sans-serif;
   max-width: 320px;
@@ -362,7 +365,8 @@ body.cartOpen #cart {
   display: none;
   font-family: 'Mont', sans-serif;
   max-width: 640px;
-  max-height: 450px;
+  height: max-content;
+  max-height: 500px;
   border-radius: 2px;
   background-color: #fff;
   position: absolute;
@@ -379,13 +383,10 @@ body.cartOpen #cart {
     display: flex;
     align-items: center;
   }
-  .upsellItemImageContainer {
-    flex: 1;
+  .upsellItemGalleryContainer {
+    // flex: 1;
     margin-right: 1rem;
-  }
-  .upsellItemImage {
-    width: 100%;
-    height: auto;
+    max-width: 50%;
   }
   .upsellItemDetails {
     flex: 1;
