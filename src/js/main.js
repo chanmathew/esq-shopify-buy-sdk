@@ -3,7 +3,6 @@
   Author: Mathew Chan. 
   All Rights Reserved. 
 */
-import 'arrive'
 
 // Define variables
 let initCount = 0
@@ -410,7 +409,7 @@ let clientSettings
       }
       // Add to cart handler
       self.find('.addToCart').on('click', function (e) {
-        addItems(self)
+        addItems(self, 'cart')
       })
       // Handle removing line items in cart
       $('body').on('click', '.cart-item-remove', function (e) {
@@ -535,6 +534,7 @@ let clientSettings
         /*
           Event Listeners 
         */
+        // Check when the variant option changes for the upsell in cart
         $('#cart').on('change', '.upsellProductOption', function (e) {
           const variant = recursiveArraySearch(
             product.variants,
@@ -543,6 +543,7 @@ let clientSettings
           const container = self.find('.upsellItemPrices').empty()
           createPrices(variant, container)
         })
+        // Check when the variant option changes for the upsell in modal
         $('#upsellItemModal').on('change', '.upsellProductOption', function (
           e
         ) {
@@ -553,13 +554,21 @@ let clientSettings
           const container = $('#upsellItemModal')
             .find('.upsellItemPrices')
             .empty()
-          console.log(container)
           createPrices(variant, container)
         })
+        $('#upsellItemModal').on('click', '.addToCart', function (e) {
+          const selectedUpsell = $('#upsellItemModal').find(
+            '.unit-option:selected'
+          )
+          addUpsellItem(selectedUpsell.val())
+        })
         self.find('.addToCart').on('click', function (e) {
-          addItems(self)
+          addItems(self, 'none')
         })
         $('body').on('click', '.upsellItemTitle, #closeModal', function (e) {
+          if (cartOpen) {
+            toggleCart()
+          }
           toggleModal()
         })
       }
@@ -569,9 +578,6 @@ let clientSettings
       Helper Functions
     */
   const toggleModal = function () {
-    if (cartOpen) {
-      toggleCart()
-    }
     modalOpen = !modalOpen
     $('body').toggleClass('modalOpen')
     $('#upsellItemModal').fadeToggle()
@@ -804,10 +810,15 @@ let clientSettings
       setCheckoutLoading(false)
       // Rerender cart
       createCartItems()
-      toggleCart()
+      if (modalOpen) {
+        toggleModal()
+      }
+      if (!cartOpen) {
+        toggleCart()
+      }
     }
   }
-  const addItems = async function (self) {
+  const addItems = async function (self, toggleElement) {
     // Reset the item count so it will rerender the cart from scratch
     itemCount = 0
     // Set loading states for buttons
@@ -854,7 +865,12 @@ let clientSettings
       setCheckoutLoading(false)
       // Rerender cart
       createCartItems()
-      toggleCart()
+      if (toggleElement === 'cart') {
+        toggleCart()
+      } else if (toggleElement === 'modal') {
+        toggleModal()
+        toggleCart()
+      }
     }
   }
   const createCartItems = function () {
