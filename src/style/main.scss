@@ -233,11 +233,11 @@ input[type="number"] {
   padding: 1.6rem;
 }
 .cartUpsellTitle {
-  color: #555555;
   font-size: 0.8rem;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 1px;
+  line-height: 1.2rem;
 }
 body.cartOpen {
   overflow: hidden;
@@ -364,15 +364,14 @@ body.cartOpen #cart {
 #upsellItemModal {
   display: none;
   font-family: 'Mont', sans-serif;
-  max-width: 640px;
+  max-width: 800px;
   height: max-content;
-  max-height: 500px;
   border-radius: 2px;
   background-color: #fff;
   position: fixed;
-  top: 0;
+  top: 50px;
   right: 0;
-  bottom: 0;
+  bottom: 50px;
   left: 0;
   margin: auto;
   overflow: auto;
@@ -382,11 +381,12 @@ body.cartOpen #cart {
     padding: 1.5rem;
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
   }
   .upsellItemGalleryContainer {
-    // flex: 1;
     margin-right: 1rem;
     max-width: 50%;
+    font-family: "slick";
   }
   .upsellItemDetails {
     flex: 1;
@@ -408,5 +408,15 @@ body.cartOpen #cart {
     position: absolute;
     top: 0.5rem;
     right: 0.5rem;
+  }
+}
+@media only screen and (max-width: 768px) {
+  #upsellItemModal {
+    top: 0;
+    bottom: 0;
+    .upsellItemGalleryContainer {
+      padding-top: 1rem;
+      max-width: 100%;
+    }
   }
 }

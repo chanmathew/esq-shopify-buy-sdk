@@ -24,7 +24,11 @@
     $(function () {
       $('#product1').plugin();
       $('#cartUpsells').pluginUpsell({
-        productHandle: 'peace-and-love'
+        productHandle: 'peace-and-love',
+        upsellHeading: 'Limited time offer! 50% off this popular lash style with Liner purchase!',
+        upsellHeadingColor: 'red',
+        upsellDiscountCode: 'AD-UPS-LINER-PBJ',
+        discountedPrice: "$11"
       })
     });
   </script>

@@ -14,6 +14,7 @@ let cartOpen = false
 let modalOpen = false
 let client
 let clientSettings
+let upsellSettings
 
   // Begin Plugin
 ;(function ($) {
@@ -437,9 +438,11 @@ let clientSettings
   }
   $.fn.pluginUpsell = async function (options) {
     const self = this
-    const upsellSettings = $.extend(
+    upsellSettings = $.extend(
       {
         productHandle: 'peace-and-love',
+        upsellHeading: 'You might also like',
+        upsellHeadingColor: '#555555',
       },
       options
     )
@@ -453,7 +456,7 @@ let clientSettings
         const firstImage = product.images[0]
         if (initCount === 0) {
           $(self).append(`
-            <h3 class="cartUpsellTitle">You might also like</h3>
+            <h3 class="cartUpsellTitle" style="color: ${upsellSettings.upsellHeadingColor}">${upsellSettings.upsellHeading}</h3>
           `)
         }
         $('#cartUpsells').append(`
@@ -464,7 +467,7 @@ let clientSettings
               <select class="upsellProductOption"></select>
               <p class="upsellItemPrices"></p>
             </div>
-            <button class="btn addToCart">
+            <button class="btn upsellAddToCart">
               <img class="spinner" src="https://cdn.shopify.com/s/files/1/0250/1519/files/spinner.svg?v=1585762796" alt="Loading Checkout" />
               <span class="addToCartText">Add</span>
             </button>
@@ -482,7 +485,7 @@ let clientSettings
                 <select class="upsellProductOption"></select>
                 <p class="upsellItemPrices"></p>
                 <p class="upsellItemDescription">${product.description}</p>
-                <button class="btn addToCart">
+                <button class="btn upsellAddToCart">
                   <img class="spinner" src="https://cdn.shopify.com/s/files/1/0250/1519/files/spinner.svg?v=1585762796" alt="Loading Checkout" />
                   <span class="addToCartText">Add To Cart</span>
                 </button>
@@ -527,12 +530,17 @@ let clientSettings
             const modalContainer = $('#upsellItemModal').find(
               '.upsellItemPrices'
             )[productOptionIndex]
-            createPrices(firstVariant, pricesContainer)
-            createPrices(firstVariant, modalContainer)
+            if (upsellSettings?.discountedPrice) {
+              createUpsellPrices(firstVariant, pricesContainer)
+              createUpsellPrices(firstVariant, modalContainer)
+            } else {
+              createPrices(firstVariant, pricesContainer)
+              createPrices(firstVariant, modalContainer)
+            }
           })
         }
         /*
-          Event Listeners 
+          Upsell Event Listeners 
         */
         // Check when the variant option changes for the upsell in cart
         $('#cart').on('change', '.upsellProductOption', function (e) {
@@ -556,14 +564,22 @@ let clientSettings
             .empty()
           createPrices(variant, container)
         })
-        $('#upsellItemModal').on('click', '.addToCart', function (e) {
+        $('#upsellItemModal').on('click', '.upsellAddToCart', function (e) {
           const selectedUpsell = $('#upsellItemModal').find(
             '.unit-option:selected'
           )
           addUpsellItem(selectedUpsell.val())
+          if (upsellSettings?.upsellDiscountCode) {
+            addDiscountToCheckout(upsellSettings.upsellDiscountCode)
+          }
         })
-        self.find('.addToCart').on('click', function (e) {
-          addItems(self, 'none')
+        self.find('.upsellAddToCart').on('click', function (e) {
+          const selectedUpsell = self.find('.unit-option:selected')
+          console.log(selectedUpsell)
+          addUpsellItem(selectedUpsell.val())
+          if (upsellSettings?.upsellDiscountCode) {
+            addDiscountToCheckout(upsellSettings.upsellDiscountCode)
+          }
         })
         $('body').on('click', '.upsellItemTitle, #closeModal', function (e) {
           if (cartOpen) {
@@ -704,6 +720,50 @@ let clientSettings
       }
     }
   }
+  const createUpsellPrices = function (variant, container) {
+    if (variant && container) {
+      // If it's a single variant product
+      const singleVariant = variant.length === 1
+      const formattedPrices = formatPrices(variant)
+      if (formattedPrices) {
+        const discountedPrice = upsellSettings?.discountedPrice
+        const { price, comparePrice } = formattedPrices
+        if (discountedPrice) {
+          $(container).append(`
+            <p class="unit-price ${
+              singleVariant ? 'single-product-price' : ''
+            } ${discountedPrice < price ? 'sale-price' : ''}">${
+            discountedPrice < price
+              ? "<span class='unit-compare-price'>" + price + '</span>'
+              : ''
+          }
+            ${discountedPrice} ${
+            clientSettings.defaultCurrency === 'USD'
+              ? clientSettings.defaultCurrency
+              : ''
+          }
+            </p>
+          `)
+        } else {
+          $(container).append(`
+          <p class="unit-price ${singleVariant ? 'single-product-price' : ''} ${
+            comparePrice > price ? 'sale-price' : ''
+          }">${
+            comparePrice > price
+              ? "<span class='unit-compare-price'>" + comparePrice + '</span>'
+              : ''
+          }
+          ${price} ${
+            clientSettings.defaultCurrency === 'USD'
+              ? clientSettings.defaultCurrency
+              : ''
+          }
+          </p>
+        `)
+        }
+      }
+    }
+  }
   const getOptionValues = function (product, name) {
     if (product?.options) {
       const productOptions = product.options.filter(
@@ -804,7 +864,6 @@ let clientSettings
             extractLineItems(checkout.lineItems)
           }
         })
-        .catch((error) => console.log("Couldn't add item to checkout: ", error))
       // Set loading states for buttons to false
       setAddToCartLoading(false)
       setCheckoutLoading(false)
@@ -871,6 +930,19 @@ let clientSettings
         toggleModal()
         toggleCart()
       }
+    }
+  }
+  const addDiscountToCheckout = async function (discountCode) {
+    console.log('Fired!')
+    const currentCheckoutId = fetchFromLocalStorage(lsCheckoutId)
+    if (discountCode) {
+      // Add a discount code to the checkout
+      await client.checkout
+        .addDiscount(currentCheckoutId, discountCode)
+        .then((checkout) => {
+          // Do something with the updated checkout
+          console.log('Discount code applied')
+        })
     }
   }
   const createCartItems = function () {
