@@ -15,6 +15,7 @@ let modalOpen = false
 let client
 let clientSettings
 let upsellSettings
+let upsellVariantId
 
   // Begin Plugin
 ;(function ($) {
@@ -371,7 +372,7 @@ let upsellSettings
             .then(function (checkout) {
               // Save new checkout ID to localstorage
               if (checkout && checkout.id) {
-                persistTolocalStorage(lsCheckoutId, checkout.id)
+                persistToLocalStorage(lsCheckoutId, checkout.id)
               }
             })
             .catch((error) =>
@@ -441,8 +442,11 @@ let upsellSettings
     upsellSettings = $.extend(
       {
         productHandle: 'peace-and-love',
-        upsellHeading: 'You might also like',
-        upsellHeadingColor: '#555555',
+        heading: 'You might also like',
+        headingColor: '#555555',
+        discountCode: null,
+        discountType: null,
+        discountAmount: null,
       },
       options
     )
@@ -456,7 +460,7 @@ let upsellSettings
         const firstImage = product.images[0]
         if (initCount === 0) {
           $(self).append(`
-            <h3 class="cartUpsellTitle" style="color: ${upsellSettings.upsellHeadingColor}">${upsellSettings.upsellHeading}</h3>
+            <h3 class="cartUpsellTitle" style="color: ${upsellSettings.headingColor}">${upsellSettings.heading}</h3>
           `)
         }
         $('#cartUpsells').append(`
@@ -530,13 +534,8 @@ let upsellSettings
             const modalContainer = $('#upsellItemModal').find(
               '.upsellItemPrices'
             )[productOptionIndex]
-            if (upsellSettings?.discountedPrice) {
-              createUpsellPrices(firstVariant, pricesContainer)
-              createUpsellPrices(firstVariant, modalContainer)
-            } else {
-              createPrices(firstVariant, pricesContainer)
-              createPrices(firstVariant, modalContainer)
-            }
+            createPrices(firstVariant, pricesContainer)
+            createPrices(firstVariant, modalContainer)
           })
         }
         /*
@@ -562,23 +561,26 @@ let upsellSettings
           const container = $('#upsellItemModal')
             .find('.upsellItemPrices')
             .empty()
-          createPrices(variant, container)
+          if (upsellSettings?.discountCode) {
+            createPrices(variant, container)
+          } else {
+            createPrices(variant, container)
+          }
         })
         $('#upsellItemModal').on('click', '.upsellAddToCart', function (e) {
           const selectedUpsell = $('#upsellItemModal').find(
             '.unit-option:selected'
           )
           addUpsellItem(selectedUpsell.val())
-          if (upsellSettings?.upsellDiscountCode) {
-            addDiscountToCheckout(upsellSettings.upsellDiscountCode)
+          if (upsellSettings?.discountCode) {
+            addDiscountToCheckout(upsellSettings.discountCode)
           }
         })
         self.find('.upsellAddToCart').on('click', function (e) {
           const selectedUpsell = self.find('.unit-option:selected')
-          console.log(selectedUpsell)
           addUpsellItem(selectedUpsell.val())
-          if (upsellSettings?.upsellDiscountCode) {
-            addDiscountToCheckout(upsellSettings.upsellDiscountCode)
+          if (upsellSettings?.discountCode) {
+            addDiscountToCheckout(upsellSettings.discountCode)
           }
         })
         $('body').on('click', '.upsellItemTitle, #closeModal', function (e) {
@@ -611,10 +613,6 @@ let upsellSettings
   }
   const fetchFromLocalStorage = function (key) {
     return JSON.parse(localStorage.getItem(key))
-  }
-  const persistTolocalStorage = function (key, value) {
-    var valueJson = JSON.stringify(value)
-    localStorage.setItem(key, valueJson)
   }
   const extractLineItems = function (lineItems) {
     if (lineItems?.length) {
@@ -659,7 +657,7 @@ let upsellSettings
     cartOpen = !cartOpen
     $('body').toggleClass('cartOpen')
   }
-  const formatPrices = function (variant) {
+  const formatPrices = function (variant, formatToCurrency = true) {
     let variantPrices = null
     if (variant && variant?.presentmentPrices?.length) {
       const results = variant.presentmentPrices.filter(
@@ -682,15 +680,22 @@ let upsellSettings
           maximumSignificantDigits: 4, // Trim any zeros after decimal
         }
       )
-      if (price?.amount) {
-        formattedPrice = priceFormatter.format(price.amount)
-      }
-      if (compareAtPrice?.amount) {
-        formattedComparePrice = priceFormatter.format(compareAtPrice.amount)
-      }
-      return {
-        price: formattedPrice,
-        comparePrice: formattedComparePrice,
+      if (formatToCurrency) {
+        if (price?.amount) {
+          formattedPrice = priceFormatter.format(price.amount)
+        }
+        if (compareAtPrice?.amount) {
+          formattedComparePrice = priceFormatter.format(compareAtPrice.amount)
+        }
+        return {
+          price: formattedPrice,
+          comparePrice: formattedComparePrice,
+        }
+      } else {
+        return {
+          price: price.amount,
+          comparePrice: compareAtPrice.amount,
+        }
       }
     }
   }
@@ -700,51 +705,52 @@ let upsellSettings
       // If it's a single variant product
       const singleVariant = variant.length === 1
       const formattedPrices = formatPrices(variant)
-      if (formattedPrices) {
-        const { price, comparePrice } = formattedPrices
+      const numericPrices = formatPrices(variant, false)
+      const discountType = upsellSettings?.discountType
+      const discountAmount = upsellSettings?.discountAmount
+      let productHandle
+      if (variant?.variableValues) {
+        productHandle = variant.variableValues.handle
+      } else if (variant?.product) {
+        productHandle = variant.product.handle
+      }
+      const priceFormatter = new Intl.NumberFormat(
+        clientSettings.defaultRegion,
+        {
+          style: 'currency',
+          currency: clientSettings.defaultCurrency,
+          maximumSignificantDigits: 4, // Trim any zeros after decimal
+        }
+      )
+      const isUpsellItem = productHandle === upsellSettings.productHandle
+      if (isUpsellItem && discountType) {
+        const { price } = numericPrices
+        const { comparePrice } = formattedPrices
+        let discountPrice
+        if (discountType === 'percentage') {
+          discountPrice = price * (discountAmount / 100)
+        } else if (discountType === 'fixed') {
+          discountPrice = price - discountAmount
+        }
+        const discountPriceFormatted = priceFormatter.format(discountPrice)
         $(container).append(`
-          <p class="unit-price ${singleVariant ? 'single-product-price' : ''} ${
-          comparePrice > price ? 'sale-price' : ''
-        }">${
-          comparePrice > price
+            <p class="unit-price ${
+              singleVariant ? 'single-product-price' : ''
+            } ${discountPrice < price ? 'sale-price' : ''}">${
+          discountPrice < price
             ? "<span class='unit-compare-price'>" + comparePrice + '</span>'
             : ''
         }
-          ${price} ${
+            ${discountPriceFormatted} ${
           clientSettings.defaultCurrency === 'USD'
             ? clientSettings.defaultCurrency
             : ''
         }
-          </p>
-        `)
-      }
-    }
-  }
-  const createUpsellPrices = function (variant, container) {
-    if (variant && container) {
-      // If it's a single variant product
-      const singleVariant = variant.length === 1
-      const formattedPrices = formatPrices(variant)
-      if (formattedPrices) {
-        const discountedPrice = upsellSettings?.discountedPrice
-        const { price, comparePrice } = formattedPrices
-        if (discountedPrice) {
-          $(container).append(`
-            <p class="unit-price ${
-              singleVariant ? 'single-product-price' : ''
-            } ${discountedPrice < price ? 'sale-price' : ''}">${
-            discountedPrice < price
-              ? "<span class='unit-compare-price'>" + price + '</span>'
-              : ''
-          }
-            ${discountedPrice} ${
-            clientSettings.defaultCurrency === 'USD'
-              ? clientSettings.defaultCurrency
-              : ''
-          }
             </p>
           `)
-        } else {
+      } else {
+        const { price, comparePrice } = formattedPrices
+        if (formattedPrices) {
           $(container).append(`
           <p class="unit-price ${singleVariant ? 'single-product-price' : ''} ${
             comparePrice > price ? 'sale-price' : ''
@@ -886,7 +892,6 @@ let upsellSettings
     // Check if the cart has any items to add
     const currentCheckoutId = fetchFromLocalStorage(lsCheckoutId)
     let selectedVariantId
-
     // Check if the product is a single variant
     const singleVariant = self.data('singleVariant')
     if (singleVariant) {
@@ -933,16 +938,12 @@ let upsellSettings
     }
   }
   const addDiscountToCheckout = async function (discountCode) {
-    console.log('Fired!')
     const currentCheckoutId = fetchFromLocalStorage(lsCheckoutId)
     if (discountCode) {
       // Add a discount code to the checkout
       await client.checkout
         .addDiscount(currentCheckoutId, discountCode)
-        .then((checkout) => {
-          // Do something with the updated checkout
-          console.log('Discount code applied')
-        })
+        .then((checkout) => {})
     }
   }
   const createCartItems = function () {
@@ -954,12 +955,16 @@ let upsellSettings
     if (cartItems?.length) {
       $('#checkoutButton').show()
       $('#cartEmpty').hide()
+      let priceCount = 0
       // For each item in cartItems, render until they've all been rendered
       for (itemCount; itemCount <= cartItems.length - 1; ) {
-        cartItems.map(function (item) {
+        cartItems.map(function (item, i) {
           const { variant } = item
           const formattedPrices = formatPrices(variant)
-          const { price, comparePrice } = formattedPrices
+          const numericPrices = formatPrices(variant, false)
+          const { price } = numericPrices
+          const { comparePrice } = formattedPrices
+
           $('#cartLineItems').append(`
             <div class="cart-item" data-value="${item.id}">
             ${
@@ -975,15 +980,7 @@ let upsellSettings
                     ? ''
                     : `<p class='cart-item-subtitle'>${item.subtitle}</p>`
                 }
-                <p class="cart-item-price unit-price ${
-                  comparePrice > price ? 'sale-price' : ''
-                }">
-                  ${
-                    comparePrice > price
-                      ? `<span class='unit-compare-price'>${comparePrice}</span>`
-                      : ''
-                  }
-                  ${price} ${clientSettings.defaultCurrency === 'USD' ? clientSettings.defaultCurrency : ''}</p>
+                <p class="cart-item-price" data-value=${variant.id}></p>
                 <div class="quantity">
                   <button class="quantity-button quantity-down">-</button>
                   <input class="qtySelector" type="number" min="0" value="${
@@ -997,6 +994,10 @@ let upsellSettings
               </div>
             </div>
           `)
+          const priceContainer = $('#cartLineItems')
+            .find('.cart-item-price')
+            .val(variant.id)[i]
+          createPrices(variant, priceContainer)
           // Increment the item count so we know we rendered all the items and won't fire on subsequent instances
           itemCount++
         })
@@ -1018,8 +1019,11 @@ let upsellSettings
     setCheckoutLoading(true)
     // Check if the cart has any items to add
     const currentCheckoutId = fetchFromLocalStorage(lsCheckoutId)
+    const cartItems = fetchFromLocalStorage(lsCartId)
     // Format the line items for passing into checkout api
     const itemsToRemove = [variantId]
+    const matchingVariant = recursiveArraySearch(cartItems, variantId)[0]
+
     await client.checkout
       .removeLineItems(currentCheckoutId, itemsToRemove)
       .then(function (checkout) {
@@ -1028,6 +1032,11 @@ let upsellSettings
       .catch((error) =>
         console.log("Couldn't remove item from checkout: ", error)
       )
+    if (matchingVariant && matchingVariant.id === variantId) {
+      await client.checkout
+        .removeDiscount(currentCheckoutId)
+        .then((checkout) => {})
+    }
     // Set loading states for buttons to false
     setCheckoutLoading(false)
     // Rerender cart
