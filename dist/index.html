@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Esqido Product</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://sdks.shopifycdn.com/js-buy-sdk/v2/latest/index.umd.min.js"></script>
+  <script type="text/javascript" src="js/slick.js"></script>
+<link href="main.min.css" rel="stylesheet"></head>
+
+<body>
+  <div id="overlay"></div>
+  <div id="cart">
+    <div id="cartWrapper"></div>
+    <div id="cartUpsells"></div>
+  </div>
+  <button id="openCart">Open Cart</button>
+  <span id="cartCount"></span>
+  <div id="product1" class="product"></div>
+  <div id="upsell1" class="product"></div>
+  <script>
+    $(function () {
+      $('#product1').plugin();
+      $('#cartUpsells').pluginUpsell({
+        productHandle: 'peace-and-love',
+        heading: 'Limited time offer! 50% off this popular lash style with Liner purchase!',
+        headingColor: 'red',
+        discountCode: 'AD-UPS-LINER-PBJ',
+        discountType: "percentage",
+        discountAmount: 50,
+      })
+    });
+  </script>
+<script type="text/javascript" src="app.bundle.min.js"></script></body>
+
+</html>

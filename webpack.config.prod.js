@@ -12,6 +12,9 @@ module.exports = merge(common, {
   optimization: {
     minimize: true,
   },
+  output: {
+    filename: 'app.bundle.min.js',
+  },
   module: {
     rules: [
       {
@@ -30,7 +33,7 @@ module.exports = merge(common, {
   plugins: [
     new CleanWebpackPlugin(),
     new MiniCssExtractPlugin({
-      filename: '[name].css',
+      filename: '[name].min.css',
       chunkFilename: '[id].css',
     }),
     new OptimizeCssAssetsPlugin({
