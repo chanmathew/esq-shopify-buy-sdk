@@ -1,8 +1,4 @@
-/* 
-  This is a private plugin for Esqido. 
-  Author: Mathew Chan. 
-  All Rights Reserved. 
-*/
+/* @license v0.1.1 Author: Mathew Chan. Copyright ESQIDO LTD. All Rights Reserved. */
 
 // Define variables
 let initCount = 0
@@ -572,6 +568,8 @@ let upsellVariantId
             '.unit-option:selected'
           )
           addUpsellItem(selectedUpsell.val())
+          // Add event to FB
+          trackFbEvent(self, selectedUpsell.val())
           if (upsellSettings?.discountCode) {
             addDiscountToCheckout(upsellSettings.discountCode)
           }
@@ -579,6 +577,8 @@ let upsellVariantId
         self.find('.upsellAddToCart').on('click', function (e) {
           const selectedUpsell = self.find('.unit-option:selected')
           addUpsellItem(selectedUpsell.val())
+          // Add event to FB
+          trackFbEvent(self, selectedUpsell.val())
           if (upsellSettings?.discountCode) {
             addDiscountToCheckout(upsellSettings.discountCode)
           }
@@ -892,15 +892,16 @@ let upsellVariantId
     // Check if the cart has any items to add
     const currentCheckoutId = fetchFromLocalStorage(lsCheckoutId)
     let selectedVariantId
+    let selectedOption
     // Check if the product is a single variant
     const singleVariant = self.data('singleVariant')
     if (singleVariant) {
       selectedVariantId = singleVariant.id
     } else {
       // Get the current selected variant option and find the variant ID
-      const options = self.find("input[type='radio']:checked")
-      if (options?.length) {
-        selectedVariantId = options[options.length - 1]?.value
+      selectedOption = self.find("input[type='radio']:checked")
+      if (selectedOption?.length) {
+        selectedVariantId = selectedOption[selectedOption.length - 1]?.value
       } else {
         selectedVariantId = self.find('.upsellProductOption').val()
       }
@@ -914,6 +915,9 @@ let upsellVariantId
         quantity: qty ? qty : 1, // If there's no qtySelector set default to 1
       },
     ]
+    // Send event to FB
+    trackFbEvent(self, selectedVariantId)
+
     if (currentCheckoutId) {
       await client.checkout
         .addLineItems(currentCheckoutId, itemsToAdd)
@@ -1081,5 +1085,30 @@ let upsellVariantId
         location.href = checkout.webUrl
       }
     })
+  }
+  const trackFbEvent = function (self, variantId) {
+    // Add Facebook Tracking
+    const productTitle = self.data('product')?.title
+    const productVariant = recursiveArraySearch(
+      self.data('product').variants,
+      variantId
+    )[0]
+    console.log(
+      productVariant,
+      productTitle,
+      parseInt(productVariant.priceV2.amount, 10),
+      productVariant.title
+    )
+    if (typeof fbq !== 'undefined') {
+      fbq('track', 'AddToCart', {
+        value: parseInt(productVariant.priceV2.amount, 10),
+        currency: clientSettings.defaultCurrency,
+        content_type: 'product_group',
+        content_ids: productVariant.sku,
+        content_category: productVariant.title,
+        content_name: productVariantTitle,
+        num_items: qty ? qty : 1,
+      })
+    }
   }
 })(jQuery)
