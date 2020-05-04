@@ -15,8 +15,7 @@
     "type": "git",
     "url": "git+https://github.com/erickzhao/static-html-webpack-boilerplate.git"
   },
-  "author": "erick zhao",
-  "license": "ISC",
+  "author": "Mathew Chan",
   "devDependencies": {
     "@babel/cli": "^7.7.4",
     "@babel/core": "^7.8.6",
