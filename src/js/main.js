@@ -453,6 +453,7 @@ let upsellVariantId
       const product = self.data('product')
       if (product) {
         const optionsAndVariants = self.data('optionsAndVariants')
+        console.log(optionsAndVariants)
         const firstImage = product.images[0]
         if (initCount === 0) {
           $(self).append(`
@@ -461,10 +462,16 @@ let upsellVariantId
         }
         $('#cartUpsells').append(`
           <div class="upsellItem">
-            <img class="upsellItemImage" src="${firstImage.src}" alt="${firstImage.altText}">
+            <img class="upsellItemImage" src="${firstImage.src}" alt="${
+          firstImage.altText
+        }">
             <div class="upsellItemDetails">
               <a class="upsellItemTitle">${product.title}</a>
-              <select class="upsellProductOption"></select>
+              ${
+                optionsAndVariants
+                  ? `<select class="upsellProductOption"></select>`
+                  : ''
+              }
               <p class="upsellItemPrices"></p>
             </div>
             <button class="btn upsellAddToCart">
@@ -482,9 +489,15 @@ let upsellVariantId
               </div>
               <div class="upsellItemDetails">
                 <a class="upsellItemTitle">${product.title}</a>
-                <select class="upsellProductOption"></select>
+                ${
+                  optionsAndVariants
+                    ? `<select class="upsellProductOption"></select>`
+                    : ''
+                }
                 <p class="upsellItemPrices"></p>
-                <p class="upsellItemDescription">${product.description}</p>
+                <div class="upsellItemDescription">${
+                  product.descriptionHtml
+                }</div>
                 <button class="btn upsellAddToCart">
                   <img class="spinner" src="https://cdn.shopify.com/s/files/1/0250/1519/files/spinner.svg?v=1585762796" alt="Loading Checkout" />
                   <span class="addToCartText">Add To Cart</span>
@@ -510,6 +523,7 @@ let upsellVariantId
             productOption
           ) {
             const dropdown = $('body').find('.upsellProductOption')
+
             const container = self.find('.upsellItem')
             const id = self.attr('id')
             const firstVariant = productOption.variants[0]
@@ -533,6 +547,12 @@ let upsellVariantId
             createPrices(firstVariant, pricesContainer)
             createPrices(firstVariant, modalContainer)
           })
+        } else {
+          const productVariant = product.variants[0]
+          const pricesContainer = self.find('.upsellItemPrices')
+          const modalContainer = $('#upsellItemModal').find('.upsellItemPrices')
+          createPrices(productVariant, pricesContainer)
+          createPrices(productVariant, modalContainer)
         }
         /*
           Upsell Event Listeners 
@@ -563,22 +583,30 @@ let upsellVariantId
             createPrices(variant, container)
           }
         })
-        $('#upsellItemModal').on('click', '.upsellAddToCart', function (e) {
-          const selectedUpsell = $('#upsellItemModal').find(
-            '.unit-option:selected'
-          )
-          addUpsellItem(selectedUpsell.val())
+        self.find('.upsellAddToCart').on('click', function (e) {
+          const selectedUpsell = self.find('.unit-option:selected')
+          const productVariant = self.data('optionsAndVariants')
+            ? selectedUpsell.val()
+            : self.data('product').variants[0].id
+          addUpsellItem(productVariant)
           // Add event to FB
-          trackFbEvent(self, selectedUpsell.val())
+          trackFbEvent(self, productVariant)
           if (upsellSettings?.discountCode) {
             addDiscountToCheckout(upsellSettings.discountCode)
           }
         })
-        self.find('.upsellAddToCart').on('click', function (e) {
-          const selectedUpsell = self.find('.unit-option:selected')
-          addUpsellItem(selectedUpsell.val())
+        // Listen for the selected upsell in the modal separately because it has its own dropdown
+        $('#upsellItemModal').on('click', '.upsellAddToCart', function (e) {
+          const selectedUpsell = $('#upsellItemModal').find(
+            '.unit-option:selected'
+          )
+          // If the product has variants, get the ID of the selected variant, otherwise just pass the first variant ID
+          const productVariant = self.data('optionsAndVariants')
+            ? selectedUpsell.val()
+            : self.data('product').variants[0].id
+          addUpsellItem(productVariant)
           // Add event to FB
-          trackFbEvent(self, selectedUpsell.val())
+          trackFbEvent(self, productVariant)
           if (upsellSettings?.discountCode) {
             addDiscountToCheckout(upsellSettings.discountCode)
           }
@@ -689,12 +717,14 @@ let upsellVariantId
         }
         return {
           price: formattedPrice,
-          comparePrice: formattedComparePrice,
+          comparePrice: formattedComparePrice
+            ? formattedComparePrice
+            : formattedPrice,
         }
       } else {
         return {
-          price: price.amount,
-          comparePrice: compareAtPrice.amount,
+          price: price?.amount,
+          comparePrice: compareAtPrice?.amount,
         }
       }
     }
@@ -724,13 +754,21 @@ let upsellVariantId
       )
       const isUpsellItem = productHandle === upsellSettings.productHandle
       if (isUpsellItem && discountType) {
-        const { price } = numericPrices
-        const { comparePrice } = formattedPrices
+        const { price, comparePrice } = numericPrices
+        const comparePriceFormatted = formattedPrices?.comparePrice
         let discountPrice
         if (discountType === 'percentage') {
-          discountPrice = price * (discountAmount / 100)
+          if (comparePrice) {
+            discountPrice = comparePrice * (discountAmount / 100)
+          } else {
+            discountPrice = price * (discountAmount / 100)
+          }
         } else if (discountType === 'fixed') {
-          discountPrice = price - discountAmount
+          if (comparePrice) {
+            discountPrice = comparePrice - discountAmount
+          } else {
+            discountPrice = price - discountAmount
+          }
         }
         const discountPriceFormatted = priceFormatter.format(discountPrice)
         $(container).append(`
@@ -738,7 +776,9 @@ let upsellVariantId
               singleVariant ? 'single-product-price' : ''
             } ${discountPrice < price ? 'sale-price' : ''}">${
           discountPrice < price
-            ? "<span class='unit-compare-price'>" + comparePrice + '</span>'
+            ? "<span class='unit-compare-price'>" +
+              comparePriceFormatted +
+              '</span>'
             : ''
         }
             ${discountPriceFormatted} ${
@@ -1093,12 +1133,6 @@ let upsellVariantId
       self.data('product').variants,
       variantId
     )[0]
-    console.log(
-      productVariant,
-      productTitle,
-      parseInt(productVariant.priceV2.amount, 10),
-      productVariant.title
-    )
     if (typeof fbq !== 'undefined') {
       fbq('track', 'AddToCart', {
         value: parseInt(productVariant.priceV2.amount, 10),
