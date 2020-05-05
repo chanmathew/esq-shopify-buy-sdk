@@ -1,4 +1,4 @@
-/* @license v0.1.3 Author: Mathew Chan. Copyright ESQIDO LTD. All Rights Reserved. */
+/* @license v0.1.4 Author: Mathew Chan. Copyright ESQIDO LTD. All Rights Reserved. */
 
 // Define variables
 let initCount = 0
@@ -453,7 +453,6 @@ let upsellVariantId
       const product = self.data('product')
       if (product) {
         const optionsAndVariants = self.data('optionsAndVariants')
-        console.log(optionsAndVariants)
         const firstImage = product.images[0]
         if (initCount === 0) {
           $(self).append(`
@@ -1133,6 +1132,7 @@ let upsellVariantId
       self.data('product').variants,
       variantId
     )[0]
+    const qty = parseInt(self.find('.qtySelector').val(), 10)
     if (typeof fbq !== 'undefined') {
       fbq('track', 'AddToCart', {
         value: parseInt(productVariant.priceV2.amount, 10),
