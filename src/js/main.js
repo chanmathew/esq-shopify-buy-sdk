@@ -1,4 +1,4 @@
-/* @license v0.1.5 Author: Mathew Chan. Copyright ESQIDO LTD. All Rights Reserved. */
+/* @license v0.1.6 Author: Mathew Chan. Copyright ESQIDO LTD. All Rights Reserved. */
 
 // Define variables
 let initCount = 0
@@ -1134,7 +1134,7 @@ let upsellVariantId
     )[0]
     const pattern = /\/([0-9]+)[^\/]*$/
     const productVariantShopifyId = pattern.exec(
-      atob('Z2lkOi8vc2hvcGlmeS9Qcm9kdWN0VmFyaWFudC8xNDU5MTAzOTg2NDg4MQ==')
+      atob(self.data('product')?.id)
     )[1]
     const qty = parseInt(self.find('.qtySelector').val(), 10)
     if (typeof fbq !== 'undefined') {
