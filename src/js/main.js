@@ -1,4 +1,4 @@
-/* @license v0.1.4 Author: Mathew Chan. Copyright ESQIDO LTD. All Rights Reserved. */
+/* @license v0.1.5 Author: Mathew Chan. Copyright ESQIDO LTD. All Rights Reserved. */
 
 // Define variables
 let initCount = 0
@@ -1132,13 +1132,17 @@ let upsellVariantId
       self.data('product').variants,
       variantId
     )[0]
+    const pattern = /\/([0-9]+)[^\/]*$/
+    const productVariantShopifyId = pattern.exec(
+      atob('Z2lkOi8vc2hvcGlmeS9Qcm9kdWN0VmFyaWFudC8xNDU5MTAzOTg2NDg4MQ==')
+    )[1]
     const qty = parseInt(self.find('.qtySelector').val(), 10)
     if (typeof fbq !== 'undefined') {
       fbq('track', 'AddToCart', {
         value: parseInt(productVariant.priceV2.amount, 10),
         currency: clientSettings.defaultCurrency,
         content_type: 'product_group',
-        content_ids: productVariant.sku,
+        content_ids: productVariantShopifyId,
         content_category: productVariant.title,
         content_name: productVariant.title,
         num_items: qty ? qty : 1,
