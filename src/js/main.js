@@ -1,4 +1,4 @@
-/* @license v0.1.2 Author: Mathew Chan. Copyright ESQIDO LTD. All Rights Reserved. */
+/* @license v0.1.3 Author: Mathew Chan. Copyright ESQIDO LTD. All Rights Reserved. */
 
 // Define variables
 let initCount = 0
@@ -1140,7 +1140,7 @@ let upsellVariantId
         content_type: 'product_group',
         content_ids: productVariant.sku,
         content_category: productVariant.title,
-        content_name: productVariantTitle,
+        content_name: productVariant.title,
         num_items: qty ? qty : 1,
       })
     }
