@@ -4,8 +4,10 @@
 let initCount = 0
 let itemCount = 0
 let slickInitCount = 0
+let checkoutUpsellDisplayCount = 0
 let lsCheckoutId = 'esq_eyeliner_checkout_id'
 let lsCartId = 'esq_eyeliner_cart'
+let lsCheckoutUpsellDisplayCount = 'esq_checkout_upsell_display_count'
 let cartOpen = false
 let modalOpen = false
 let client
@@ -443,12 +445,24 @@ let upsellVariantId
         discountCode: null,
         discountType: null,
         discountAmount: null,
+        upsellOnCheckout: false,
       },
       options
     )
     if (!client) {
       console.log('Please initialize Client first.')
     } else {
+      // Define the LS key for checkout upsell count
+      const upsellDisplayCount = fetchFromLocalStorage(
+        lsCheckoutUpsellDisplayCount
+      )
+      if (upsellSettings.upsellOnCheckout) {
+        if (upsellDisplayCount) {
+          checkoutUpsellDisplayCount = upsellDisplayCount
+        } else {
+          persistToLocalStorage(lsCheckoutUpsellDisplayCount, 0)
+        }
+      }
       await fetchProduct(self, upsellSettings.productHandle)
       const product = self.data('product')
       if (product) {
@@ -1116,14 +1130,40 @@ let upsellVariantId
     createCartItems()
   }
   const checkout = async function () {
-    setCheckoutLoading(true)
     const currentCheckoutId = fetchFromLocalStorage(lsCheckoutId)
-    await client.checkout.fetch(currentCheckoutId).then((checkout) => {
-      // Do something with the checkout
-      if (checkout.webUrl) {
-        location.href = checkout.webUrl
+    const upsellDisplayCount = fetchFromLocalStorage(
+      lsCheckoutUpsellDisplayCount
+    )
+    // If the checkout upsell is not enabled, go to checkout directly
+    if (!upsellSettings.upsellOnCheckout) {
+      setCheckoutLoading(true)
+      await client.checkout.fetch(currentCheckoutId).then((checkout) => {
+        // Do something with the checkout
+        if (checkout.webUrl) {
+          location.href = checkout.webUrl
+        }
+      })
+    } else {
+      console.log('Checkout upsell count: ', upsellDisplayCount)
+      // If the upsell hasn't been shown to the customer yet, trigger the modal
+      if (upsellDisplayCount === 0) {
+        toggleCart()
+        toggleModal()
+        checkoutUpsellDisplayCount++
+        persistToLocalStorage(
+          lsCheckoutUpsellDisplayCount,
+          checkoutUpsellDisplayCount
+        )
+      } else {
+        // If the upsell has already been shown, skip the modal and go to checkout
+        await client.checkout.fetch(currentCheckoutId).then((checkout) => {
+          // Do something with the checkout
+          if (checkout.webUrl) {
+            location.href = checkout.webUrl
+          }
+        })
       }
-    })
+    }
   }
   const trackFbEvent = function (self, variantId) {
     // Add Facebook Tracking
