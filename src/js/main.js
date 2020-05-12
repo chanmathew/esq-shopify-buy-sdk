@@ -10,6 +10,7 @@ let lsCartId = 'esq_eyeliner_cart'
 let lsCheckoutUpsellDisplayCount = 'esq_checkout_upsell_display_count'
 let cartOpen = false
 let modalOpen = false
+let checkoutUpsellModalOpen = false
 let client
 let clientSettings
 let upsellSettings
@@ -404,7 +405,11 @@ let upsellVariantId
         $('body').on('click', '#modalOverlay', function (e) {
           event.stopPropagation()
           event.stopImmediatePropagation()
-          toggleModal()
+          if (modalOpen) {
+            toggleModal()
+          } else if (checkoutUpsellModalOpen) {
+            toggleCheckoutUpsellModal()
+          }
         })
       }
       // Add to cart handler
@@ -495,7 +500,7 @@ let upsellVariantId
         `)
         $('body').append(`
           <div id="modalOverlay"></div>
-          <div id="upsellItemModal">
+          <div id="upsellItemModal" class="upsellModal">
             <div id="upsellModalContainer">
               <div class="upsellItemGalleryContainer">
                 <div class="upsellItemGallery"></div>
@@ -517,11 +522,59 @@ let upsellVariantId
                 </button>
               </div>
               <button id="closeModal">
-                <img src="https://uploads-ssl.webflow.com/5e70f8e5d7461820999a0cf5/5e7b70d9dd8fc24bf01bc3be_close.svg" alt="Close Bag" />
+                <img src="https://uploads-ssl.webflow.com/5e70f8e5d7461820999a0cf5/5e7b70d9dd8fc24bf01bc3be_close.svg" alt="Close" />
               </button>
             </div>
           </div>
         `)
+        if (upsellSettings.upsellOnCheckout) {
+          $('body').append(`
+          <div id="checkoutUpsellModal" class="upsellModal">
+            <div id="checkoutUpsellModalContainer">
+              <p class="checkoutSpsellModalSubhead">Customize Your Order</p>
+              <h3>Add One of Esqido Premium Lashes Pack With -xx% OFF</h3>
+              <div class="upsellHighlights">
+                <div class="upsellHighlightItem">
+                  <img src="https://placehold.it/80x80" alt="">
+                  <p>Highests Quality Materials That Lasts Up to 20-25 Wears</p>
+                </div>
+                <div class="upsellHighlightItem">
+                  <img src="https://placehold.it/80x80" alt="">
+                  <p>Unisyn™ Technology Makes Them Ultra-natural Looking</p>
+                </div>
+                <div class="upsellHighlightItem">
+                  <img src="https://placehold.it/80x80" alt="">
+                  <p>Recommended by A-list Celebs and Pro Make Up Artists</p>
+                </div>
+              </div>
+              <div class="upsellItemGalleryContainer">
+                <div class="upsellItemGallery"></div>
+              </div>
+              <div class="upsellItemListing">
+                <div class="upsellItemDetails">
+                  <a class="upsellItemTitle">${product.title}</a>
+                  ${
+                    optionsAndVariants
+                      ? `<select class="upsellProductOption"></select>`
+                      : ''
+                  }
+                  <p class="upsellItemPrices"></p>
+                  <div class="upsellItemDescription">${
+                    product.descriptionHtml
+                  }</div>
+                  <button class="btn upsellAddToCart">
+                    <img class="spinner" src="https://cdn.shopify.com/s/files/1/0250/1519/files/spinner.svg?v=1585762796" alt="Loading Checkout" />
+                    <span class="addToCartText">Add To Cart</span>
+                  </button>
+                </div>
+              </div>
+              <button id="closeModal">
+                <img src="https://uploads-ssl.webflow.com/5e70f8e5d7461820999a0cf5/5e7b70d9dd8fc24bf01bc3be_close.svg" alt="Close" />
+              </button>
+            </div>
+          </div>
+        `)
+        }
         const galleryContainer = $('#upsellItemModal').find(
           '.upsellItemGallery'
         )
@@ -627,8 +680,11 @@ let upsellVariantId
         $('body').on('click', '.upsellItemTitle, #closeModal', function (e) {
           if (cartOpen) {
             toggleCart()
+          } else if (modalOpen) {
+            toggleModal()
+          } else if (checkoutUpsellModalOpen) {
+            toggleCheckoutUpsellModal()
           }
-          toggleModal()
         })
       }
     }
@@ -641,6 +697,18 @@ let upsellVariantId
     $('body').toggleClass('modalOpen')
     $('#upsellItemModal').fadeToggle()
     if (modalOpen && slickInitCount === 0) {
+      $('.upsellItemGallery').slick({
+        arrows: false,
+        dots: true,
+      })
+      slickInitCount++
+    }
+  }
+  const toggleCheckoutUpsellModal = function () {
+    checkoutUpsellModalOpen = !checkoutUpsellModalOpen
+    $('body').toggleClass('modalOpen')
+    $('#checkoutUpsellModal').fadeToggle()
+    if (checkoutUpsellModalOpen && slickInitCount === 0) {
       $('.upsellItemGallery').slick({
         arrows: false,
         dots: true,
@@ -1146,23 +1214,23 @@ let upsellVariantId
     } else {
       console.log('Checkout upsell count: ', upsellDisplayCount)
       // If the upsell hasn't been shown to the customer yet, trigger the modal
-      if (upsellDisplayCount === 0) {
-        toggleCart()
-        toggleModal()
-        checkoutUpsellDisplayCount++
-        persistToLocalStorage(
-          lsCheckoutUpsellDisplayCount,
-          checkoutUpsellDisplayCount
-        )
-      } else {
-        // If the upsell has already been shown, skip the modal and go to checkout
-        await client.checkout.fetch(currentCheckoutId).then((checkout) => {
-          // Do something with the checkout
-          if (checkout.webUrl) {
-            location.href = checkout.webUrl
-          }
-        })
-      }
+      // if (upsellDisplayCount === 0) {
+      toggleCart()
+      toggleCheckoutUpsellModal()
+      checkoutUpsellDisplayCount++
+      persistToLocalStorage(
+        lsCheckoutUpsellDisplayCount,
+        checkoutUpsellDisplayCount
+      )
+      //   } else {
+      //     // If the upsell has already been shown, skip the modal and go to checkout
+      //     await client.checkout.fetch(currentCheckoutId).then((checkout) => {
+      //       // Do something with the checkout
+      //       if (checkout.webUrl) {
+      //         location.href = checkout.webUrl
+      //       }
+      //     })
+      //   }
     }
   }
   const trackFbEvent = function (self, variantId) {

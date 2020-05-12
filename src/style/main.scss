@@ -362,17 +362,58 @@ body.cartOpen #cart {
   margin-bottom: 0.5rem;
 }
 #upsellItemModal {
-  display: none;
-  font-family: 'Mont', sans-serif;
-  max-width: 800px;
-  height: max-content;
-  border-radius: 2px;
-  background-color: #fff;
-  position: fixed;
   top: 50px;
   right: 0;
   bottom: 50px;
   left: 0;
+  height: max-content;
+  max-width: 800px;
+}
+#checkoutUpsellModal {
+  top: 25px;
+  right: 25px;
+  bottom: 25px;
+  left: 25px;
+  #checkoutUpsellModalContainer {
+    position: relative;
+    padding: 1.5rem;
+    .checkoutSpsellModalSubhead {
+      text-align: center;
+    }
+    h3 {
+      text-align: center;
+    }
+  }
+  .upsellHighlights {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 1.6rem;
+    max-width: 64rem;
+  }
+  .upsellHighlightItem {
+    display: flex;
+    align-items: center;
+    img {
+      margin-right: 1rem;
+    }
+    p {
+      max-width: 14rem;
+      font-size: 0.9rem;
+      margin-right: 0.4rem;
+    }
+  }
+
+}
+.upsellModal {
+  display: none;
+  font-family: 'Mont', sans-serif;
+  border-radius: 2px;
+  background-color: #fff;
+  position: fixed;
   margin: auto;
   overflow: auto;
   z-index: 4;
