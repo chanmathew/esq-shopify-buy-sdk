@@ -444,13 +444,18 @@ let upsellVariantId
     const self = this
     upsellSettings = $.extend(
       {
-        productHandle: 'peace-and-love',
         heading: 'You might also like',
         headingColor: '#555555',
         discountCode: null,
         discountType: null,
         discountAmount: null,
-        upsellOnCheckout: false,
+        upsellOnCheckout: true,
+        cartUpsell: null,
+        checkoutUpsells: [
+          'unisyn-classic-bundle',
+          'unisyn-wispy-bundle',
+          'unisyn-glam-bundle',
+        ],
       },
       options
     )
@@ -468,43 +473,22 @@ let upsellVariantId
           persistToLocalStorage(lsCheckoutUpsellDisplayCount, 0)
         }
       }
-      await fetchProduct(self, upsellSettings.productHandle)
-      const product = self.data('product')
-      if (product) {
-        const optionsAndVariants = self.data('optionsAndVariants')
-        const firstImage = product.images[0]
-        if (initCount === 0) {
-          $(self).append(`
-            <h3 class="cartUpsellTitle" style="color: ${upsellSettings.headingColor}">${upsellSettings.heading}</h3>
-          `)
-        }
-        $('#cartUpsells').append(`
-          <div class="upsellItem">
-            <img class="upsellItemImage" src="${firstImage.src}" alt="${
-          firstImage.altText
-        }">
-            <div class="upsellItemDetails">
-              <a class="upsellItemTitle">${product.title}</a>
-              ${
-                optionsAndVariants
-                  ? `<select class="upsellProductOption"></select>`
-                  : ''
-              }
-              <p class="upsellItemPrices"></p>
-            </div>
-            <button class="btn upsellAddToCart">
-              <img class="spinner" src="https://cdn.shopify.com/s/files/1/0250/1519/files/spinner.svg?v=1585762796" alt="Loading Checkout" />
-              <span class="addToCartText">Add</span>
-            </button>
-          </div>
-        `)
-        $('body').append(`
-          <div id="modalOverlay"></div>
-          <div id="upsellItemModal" class="upsellModal">
-            <div id="upsellModalContainer">
-              <div class="upsellItemGalleryContainer">
-                <div class="upsellItemGallery"></div>
-              </div>
+      if (upsellSettings.cartUpsell) {
+        await fetchProduct(self, upsellSettings.cartUpsell)
+        const product = self.data('product')
+        if (product) {
+          const optionsAndVariants = self.data('optionsAndVariants')
+          const firstImage = product.images[0]
+          if (initCount === 0) {
+            $(self).append(`
+              <h3 class="cartUpsellTitle" style="color: ${upsellSettings.headingColor}">${upsellSettings.heading}</h3>
+            `)
+          }
+          $('#cartUpsells').append(`
+            <div class="upsellItem">
+              <img class="upsellItemImage" src="${firstImage.src}" alt="${
+            firstImage.altText
+          }">
               <div class="upsellItemDetails">
                 <a class="upsellItemTitle">${product.title}</a>
                 ${
@@ -513,44 +497,20 @@ let upsellVariantId
                     : ''
                 }
                 <p class="upsellItemPrices"></p>
-                <div class="upsellItemDescription">${
-                  product.descriptionHtml
-                }</div>
-                <button class="btn upsellAddToCart">
-                  <img class="spinner" src="https://cdn.shopify.com/s/files/1/0250/1519/files/spinner.svg?v=1585762796" alt="Loading Checkout" />
-                  <span class="addToCartText">Add To Cart</span>
-                </button>
               </div>
-              <button id="closeModal">
-                <img src="https://uploads-ssl.webflow.com/5e70f8e5d7461820999a0cf5/5e7b70d9dd8fc24bf01bc3be_close.svg" alt="Close" />
+              <button class="btn upsellAddToCart">
+                <img class="spinner" src="https://cdn.shopify.com/s/files/1/0250/1519/files/spinner.svg?v=1585762796" alt="Loading Checkout" />
+                <span class="addToCartText">Add</span>
               </button>
             </div>
-          </div>
-        `)
-        if (upsellSettings.upsellOnCheckout) {
+          `)
           $('body').append(`
-          <div id="checkoutUpsellModal" class="upsellModal">
-            <div id="checkoutUpsellModalContainer">
-              <p class="checkoutSpsellModalSubhead">Customize Your Order</p>
-              <h3>Add One of Esqido Premium Lashes Pack With -xx% OFF</h3>
-              <div class="upsellHighlights">
-                <div class="upsellHighlightItem">
-                  <img src="https://placehold.it/80x80" alt="">
-                  <p>Highests Quality Materials That Lasts Up to 20-25 Wears</p>
+            <div id="modalOverlay"></div>
+            <div id="upsellItemModal" class="upsellModal">
+              <div id="upsellModalContainer">
+                <div class="upsellItemGalleryContainer">
+                  <div class="upsellItemGallery"></div>
                 </div>
-                <div class="upsellHighlightItem">
-                  <img src="https://placehold.it/80x80" alt="">
-                  <p>Unisyn™ Technology Makes Them Ultra-natural Looking</p>
-                </div>
-                <div class="upsellHighlightItem">
-                  <img src="https://placehold.it/80x80" alt="">
-                  <p>Recommended by A-list Celebs and Pro Make Up Artists</p>
-                </div>
-              </div>
-              <div class="upsellItemGalleryContainer">
-                <div class="upsellItemGallery"></div>
-              </div>
-              <div class="upsellItemListing">
                 <div class="upsellItemDetails">
                   <a class="upsellItemTitle">${product.title}</a>
                   ${
@@ -567,126 +527,200 @@ let upsellVariantId
                     <span class="addToCartText">Add To Cart</span>
                   </button>
                 </div>
+                <button id="closeModal">
+                  <img src="https://uploads-ssl.webflow.com/5e70f8e5d7461820999a0cf5/5e7b70d9dd8fc24bf01bc3be_close.svg" alt="Close" />
+                </button>
               </div>
-              <button id="closeModal">
-                <img src="https://uploads-ssl.webflow.com/5e70f8e5d7461820999a0cf5/5e7b70d9dd8fc24bf01bc3be_close.svg" alt="Close" />
-              </button>
             </div>
-          </div>
-        `)
-        }
-        const galleryContainer = $('#upsellItemModal').find(
-          '.upsellItemGallery'
-        )
-        $.each(product.images, function (i, img) {
-          $(galleryContainer).append(`
-          <img class="upsellItemImage" src="${img.src}" alt="${img.altText}">
           `)
-        })
-        if (optionsAndVariants) {
-          $.each(optionsAndVariants, function (
-            productOptionIndex,
-            productOption
-          ) {
-            const dropdown = $('body').find('.upsellProductOption')
-
-            const container = self.find('.upsellItem')
-            const id = self.attr('id')
-            const firstVariant = productOption.variants[0]
-            // First create the label and input for each product option
-            $(dropdown).append(`
-              <option class="unit-option" value='${
-                firstVariant.id
-              }' data-value='${productOption.name}' ${
-              !firstVariant.available ? 'disabled' : ''
-            }>
-                ${productOption.name}
-              </option>
+          const galleryContainer = $('#upsellItemModal').find(
+            '.upsellItemGallery'
+          )
+          $.each(product.images, function (i, img) {
+            $(galleryContainer).append(`
+            <img class="upsellItemImage" src="${img.src}" alt="${img.altText}">
             `)
-            // Get the price of any variant within that product option
-            const pricesContainer = container.find('.upsellItemPrices')[
-              productOptionIndex
-            ]
+          })
+          if (optionsAndVariants) {
+            $.each(optionsAndVariants, function (
+              productOptionIndex,
+              productOption
+            ) {
+              const dropdown = $('body').find('.upsellProductOption')
+
+              const container = self.find('.upsellItem')
+              const id = self.attr('id')
+              const firstVariant = productOption.variants[0]
+              // First create the label and input for each product option
+              $(dropdown).append(`
+                <option class="unit-option" value='${
+                  firstVariant.id
+                }' data-value='${productOption.name}' ${
+                !firstVariant.available ? 'disabled' : ''
+              }>
+                  ${productOption.name}
+                </option>
+              `)
+              // Get the price of any variant within that product option
+              const pricesContainer = container.find('.upsellItemPrices')[
+                productOptionIndex
+              ]
+              const modalContainer = $('#upsellItemModal').find(
+                '.upsellItemPrices'
+              )[productOptionIndex]
+              createPrices(firstVariant, pricesContainer)
+              createPrices(firstVariant, modalContainer)
+            })
+          } else {
+            const productVariant = product.variants[0]
+            const pricesContainer = self.find('.upsellItemPrices')
             const modalContainer = $('#upsellItemModal').find(
               '.upsellItemPrices'
-            )[productOptionIndex]
-            createPrices(firstVariant, pricesContainer)
-            createPrices(firstVariant, modalContainer)
-          })
-        } else {
-          const productVariant = product.variants[0]
-          const pricesContainer = self.find('.upsellItemPrices')
-          const modalContainer = $('#upsellItemModal').find('.upsellItemPrices')
-          createPrices(productVariant, pricesContainer)
-          createPrices(productVariant, modalContainer)
+            )
+            createPrices(productVariant, pricesContainer)
+            createPrices(productVariant, modalContainer)
+          }
         }
-        /*
+      }
+      if (upsellSettings.upsellOnCheckout) {
+        const upsells = upsellSettings?.checkoutUpsells
+        $('body').append(`
+            <div id="modalOverlay"></div>
+            <div id="checkoutUpsellModal" class="upsellModal">
+              <div id="checkoutUpsellModalContainer">
+                <p class="checkoutSpsellModalSubhead">Customize Your Order</p>
+                <h3>Add an Esqido Premium Lashes Kit at -40% OFF!</h3>
+                <div class="upsellHighlights">
+                  <div class="upsellHighlightItem">
+                    <img src="https://cdn.shopify.com/s/files/1/0250/1519/t/27/assets/time-icon.svg?v=1269636006768805444" alt="">
+                    <p>Highests Quality Materials That Lasts Up to 20-25 Wears</p>
+                  </div>
+                  <div class="upsellHighlightItem">
+                    <img src="https://cdn.shopify.com/s/files/1/0250/1519/t/27/assets/eyelash-icon.svg?v=17637281597508357764" alt="">
+                    <p>Unisyn™ Technology Makes Them Ultra-natural Looking</p>
+                  </div>
+                  <div class="upsellHighlightItem">
+                    <img src="https://cdn.shopify.com/s/files/1/0250/1519/t/27/assets/curler-icon.svg?v=18141781665275607000" alt="">
+                    <p>Recommended by A-list Celebs and Pro Make Up Artists</p>
+                  </div>
+                </div>
+                <div class="upsellItemListing"></div>
+                <button id="skipCheckoutUpsell" class="btn secondary">No thanks, take me to checkout</button>
+                <button id="closeModal">
+                  <img src="https://uploads-ssl.webflow.com/5e70f8e5d7461820999a0cf5/5e7b70d9dd8fc24bf01bc3be_close.svg" alt="Close" />
+                </button>
+              </div>
+            </div>
+          `)
+        if (upsells.length) {
+          const container = $('#checkoutUpsellModal').find('.upsellItemListing')
+          await upsells.map(async (item, i) => {
+            container.append(`
+                <div class="checkoutUpsellProduct product-${i}">
+                </div>
+              `)
+            const productContainer = container.find(`.product-${i}`)
+            await fetchProduct(productContainer, item)
+            const product = productContainer.data('product')
+            productContainer.append(`
+                <div class="checkoutUpsellItemGalleryContainer">
+                  <div class="checkoutUpsellItemGallery"></div>
+                </div>
+                <p class="upsellItemTitle">${product.title}</p>
+                <p class="upsellItemPrices"></p>
+                <div class="upsellItemDescription">${product.descriptionHtml}</div>
+                <button class="btn upsellAddToCart" value="${product.variants[0].id}">
+                  <img class="spinner" src="https://cdn.shopify.com/s/files/1/0250/1519/files/spinner.svg?v=1585762796" alt="Loading Checkout" />
+                  <span class="addToCartText">Add & Checkout</span>
+                </button>
+              `)
+            const priceContainer = productContainer.find('.upsellItemPrices')
+            const galleryContainer = productContainer.find(
+              '.checkoutUpsellItemGallery'
+            )
+            $.each(product.images, function (i, img) {
+              $(galleryContainer).append(`
+                <img class="checkoutUpsellImage" src="${img.src}" alt="${img.altText}">
+              `)
+            })
+            product.variants.map((variant) =>
+              createPrices(variant, priceContainer)
+            )
+          })
+        }
+      }
+      /*
           Upsell Event Listeners 
         */
-        // Check when the variant option changes for the upsell in cart
-        $('#cart').on('change', '.upsellProductOption', function (e) {
-          const variant = recursiveArraySearch(
-            product.variants,
-            e.target.value
-          )[0]
-          const container = self.find('.upsellItemPrices').empty()
+      // Check when the variant option changes for the upsell in cart
+      $('#cart').on('change', '.upsellProductOption', function (e) {
+        const variant = recursiveArraySearch(
+          product.variants,
+          e.target.value
+        )[0]
+        const container = self.find('.upsellItemPrices').empty()
+        createPrices(variant, container)
+      })
+      // Check when the variant option changes for the upsell in modal
+      $('#upsellItemModal').on('change', '.upsellProductOption', function (e) {
+        const variant = recursiveArraySearch(
+          product.variants,
+          e.target.value
+        )[0]
+        const container = $('#upsellItemModal')
+          .find('.upsellItemPrices')
+          .empty()
+        if (upsellSettings?.discountCode) {
           createPrices(variant, container)
-        })
-        // Check when the variant option changes for the upsell in modal
-        $('#upsellItemModal').on('change', '.upsellProductOption', function (
-          e
-        ) {
-          const variant = recursiveArraySearch(
-            product.variants,
-            e.target.value
-          )[0]
-          const container = $('#upsellItemModal')
-            .find('.upsellItemPrices')
-            .empty()
-          if (upsellSettings?.discountCode) {
-            createPrices(variant, container)
-          } else {
-            createPrices(variant, container)
-          }
-        })
-        self.find('.upsellAddToCart').on('click', function (e) {
-          const selectedUpsell = self.find('.unit-option:selected')
-          const productVariant = self.data('optionsAndVariants')
-            ? selectedUpsell.val()
-            : self.data('product').variants[0].id
-          addUpsellItem(productVariant)
-          // Add event to FB
-          trackFbEvent(self, productVariant)
-          if (upsellSettings?.discountCode) {
-            addDiscountToCheckout(upsellSettings.discountCode)
-          }
-        })
-        // Listen for the selected upsell in the modal separately because it has its own dropdown
-        $('#upsellItemModal').on('click', '.upsellAddToCart', function (e) {
-          const selectedUpsell = $('#upsellItemModal').find(
-            '.unit-option:selected'
-          )
-          // If the product has variants, get the ID of the selected variant, otherwise just pass the first variant ID
-          const productVariant = self.data('optionsAndVariants')
-            ? selectedUpsell.val()
-            : self.data('product').variants[0].id
-          addUpsellItem(productVariant)
-          // Add event to FB
-          trackFbEvent(self, productVariant)
-          if (upsellSettings?.discountCode) {
-            addDiscountToCheckout(upsellSettings.discountCode)
-          }
-        })
-        $('body').on('click', '.upsellItemTitle, #closeModal', function (e) {
-          if (cartOpen) {
-            toggleCart()
-          } else if (modalOpen) {
-            toggleModal()
-          } else if (checkoutUpsellModalOpen) {
-            toggleCheckoutUpsellModal()
-          }
-        })
-      }
+        } else {
+          createPrices(variant, container)
+        }
+      })
+      self.find('.upsellAddToCart').on('click', function (e) {
+        const selectedUpsell = self.find('.unit-option:selected')
+        const productVariant = self.data('optionsAndVariants')
+          ? selectedUpsell.val()
+          : self.data('product').variants[0].id
+        addUpsellItem(productVariant)
+        // Add event to FB
+        trackFbEvent(self, productVariant)
+        if (upsellSettings?.discountCode) {
+          addDiscountToCheckout(upsellSettings.discountCode)
+        }
+      })
+      // Listen for the selected upsell in the modal separately because it has its own dropdown
+      $('#upsellItemModal').on('click', '.upsellAddToCart', function (e) {
+        const selectedUpsell = $('#upsellItemModal').find(
+          '.unit-option:selected'
+        )
+        // If the product has variants, get the ID of the selected variant, otherwise just pass the first variant ID
+        const productVariant = self.data('optionsAndVariants')
+          ? selectedUpsell.val()
+          : self.data('product').variants[0].id
+        addUpsellItem(productVariant)
+        // Add event to FB
+        trackFbEvent(self, productVariant)
+        if (upsellSettings?.discountCode) {
+          addDiscountToCheckout(upsellSettings.discountCode)
+        }
+      })
+      $('body').on('click', '.upsellItemTitle, #closeModal', function (e) {
+        if (cartOpen) {
+          toggleCart()
+        } else if (modalOpen) {
+          toggleModal()
+        } else if (checkoutUpsellModalOpen) {
+          toggleCheckoutUpsellModal()
+        }
+      })
+      // Checkout Upsell event listeners
+      $('#checkoutUpsellModal').on('click', '.upsellAddToCart', function (e) {
+        addUpsellItem(this.value)
+        checkout()
+      })
+      $('#skipCheckoutUpsell').on('click', function (e) {
+        checkout()
+      })
     }
   }
   /*
@@ -698,7 +732,7 @@ let upsellVariantId
     $('#upsellItemModal').fadeToggle()
     if (modalOpen && slickInitCount === 0) {
       $('.upsellItemGallery').slick({
-        arrows: false,
+        arrows: true,
         dots: true,
       })
       slickInitCount++
@@ -709,8 +743,8 @@ let upsellVariantId
     $('body').toggleClass('modalOpen')
     $('#checkoutUpsellModal').fadeToggle()
     if (checkoutUpsellModalOpen && slickInitCount === 0) {
-      $('.upsellItemGallery').slick({
-        arrows: false,
+      $('.checkoutUpsellItemGallery').slick({
+        arrows: true,
         dots: true,
       })
       slickInitCount++
@@ -833,7 +867,7 @@ let upsellVariantId
           maximumSignificantDigits: 4, // Trim any zeros after decimal
         }
       )
-      const isUpsellItem = productHandle === upsellSettings.productHandle
+      const isUpsellItem = productHandle === upsellSettings.cartUpsell
       if (isUpsellItem && discountType) {
         const { price, comparePrice } = numericPrices
         const comparePriceFormatted = formattedPrices?.comparePrice
@@ -1214,23 +1248,23 @@ let upsellVariantId
     } else {
       console.log('Checkout upsell count: ', upsellDisplayCount)
       // If the upsell hasn't been shown to the customer yet, trigger the modal
-      // if (upsellDisplayCount === 0) {
-      toggleCart()
-      toggleCheckoutUpsellModal()
-      checkoutUpsellDisplayCount++
-      persistToLocalStorage(
-        lsCheckoutUpsellDisplayCount,
-        checkoutUpsellDisplayCount
-      )
-      //   } else {
-      //     // If the upsell has already been shown, skip the modal and go to checkout
-      //     await client.checkout.fetch(currentCheckoutId).then((checkout) => {
-      //       // Do something with the checkout
-      //       if (checkout.webUrl) {
-      //         location.href = checkout.webUrl
-      //       }
-      //     })
-      //   }
+      if (upsellDisplayCount === 0) {
+        toggleCart()
+        toggleCheckoutUpsellModal()
+        checkoutUpsellDisplayCount++
+        persistToLocalStorage(
+          lsCheckoutUpsellDisplayCount,
+          checkoutUpsellDisplayCount
+        )
+      } else {
+        // If the upsell has already been shown, skip the modal and go to checkout
+        await client.checkout.fetch(currentCheckoutId).then((checkout) => {
+          // Do something with the checkout
+          if (checkout.webUrl) {
+            location.href = checkout.webUrl
+          }
+        })
+      }
     }
   }
   const trackFbEvent = function (self, variantId) {
