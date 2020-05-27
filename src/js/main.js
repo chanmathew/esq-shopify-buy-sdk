@@ -1,4 +1,4 @@
-/* @license v0.1.8 Author: Mathew Chan. Copyright ESQIDO LTD. All Rights Reserved. */
+/* @license v0.2.0 Author: Mathew Chan. Copyright ESQIDO LTD. All Rights Reserved. */
 
 // Define variables
 let initCount = 0
@@ -1239,9 +1239,20 @@ let upsellVariantId
     const upsellDisplayCount = fetchFromLocalStorage(
       lsCheckoutUpsellDisplayCount
     )
-    // If the checkout upsell is not enabled, go to checkout directly
-    if (!upsellSettings.upsellOnCheckout) {
-      console.log('No checkout upsell')
+    // If the upsell hasn't been shown to the customer yet, trigger the modal
+    if (upsellSettings?.upsellOnCheckout && upsellDisplayCount === 0) {
+      console.log('Count:', upsellDisplayCount)
+      toggleCart()
+      toggleCheckoutUpsellModal()
+      checkoutUpsellDisplayCount++
+      persistToLocalStorage(
+        lsCheckoutUpsellDisplayCount,
+        checkoutUpsellDisplayCount
+      )
+      return
+    } else {
+      console.log('checking out')
+      // If the upsell has already been shown, skip the modal and go to checkout
       setCheckoutLoading(true)
       await client.checkout.fetch(currentCheckoutId).then((checkout) => {
         // Do something with the checkout
@@ -1249,28 +1260,6 @@ let upsellVariantId
           location.href = checkout.webUrl
         }
       })
-    } else {
-      // If the upsell hasn't been shown to the customer yet, trigger the modal
-      if (upsellDisplayCount === 0) {
-        console.log('Count:', upsellDisplayCount)
-        toggleCart()
-        toggleCheckoutUpsellModal()
-        checkoutUpsellDisplayCount++
-        persistToLocalStorage(
-          lsCheckoutUpsellDisplayCount,
-          checkoutUpsellDisplayCount
-        )
-      } else {
-        console.log('checking out')
-        // If the upsell has already been shown, skip the modal and go to checkout
-        setCheckoutLoading(true)
-        await client.checkout.fetch(currentCheckoutId).then((checkout) => {
-          // Do something with the checkout
-          if (checkout.webUrl) {
-            location.href = checkout.webUrl
-          }
-        })
-      }
     }
   }
   const trackFbEvent = function (self, variantId) {
