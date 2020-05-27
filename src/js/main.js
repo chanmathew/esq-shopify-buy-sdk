@@ -1,4 +1,4 @@
-/* @license v0.2.0 Author: Mathew Chan. Copyright ESQIDO LTD. All Rights Reserved. */
+/* @license v0.2.1 Author: Mathew Chan. Copyright ESQIDO LTD. All Rights Reserved. */
 
 // Define variables
 let initCount = 0
@@ -1234,7 +1234,6 @@ let upsellVariantId
     createCartItems()
   }
   const checkout = async function () {
-    console.log('Checkout fired!')
     const currentCheckoutId = fetchFromLocalStorage(lsCheckoutId)
     const upsellDisplayCount = fetchFromLocalStorage(
       lsCheckoutUpsellDisplayCount
@@ -1251,7 +1250,6 @@ let upsellVariantId
       )
       return
     } else {
-      console.log('checking out')
       // If the upsell has already been shown, skip the modal and go to checkout
       setCheckoutLoading(true)
       await client.checkout.fetch(currentCheckoutId).then((checkout) => {
