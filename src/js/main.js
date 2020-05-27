@@ -717,11 +717,11 @@ let upsellVariantId
       $('#checkoutUpsellModal').on('click', '.upsellAddToCart', async function (
         e
       ) {
-        addUpsellItem(this.value)
+        await addUpsellItem(this.value)
         await checkout()
       })
-      $('#skipCheckoutUpsell').on('click', function (e) {
-        checkout()
+      $('#skipCheckoutUpsell').on('click', async function (e) {
+        await checkout()
       })
     }
   }
@@ -1234,12 +1234,14 @@ let upsellVariantId
     createCartItems()
   }
   const checkout = async function () {
+    console.log('Checkout fired!')
     const currentCheckoutId = fetchFromLocalStorage(lsCheckoutId)
     const upsellDisplayCount = fetchFromLocalStorage(
       lsCheckoutUpsellDisplayCount
     )
     // If the checkout upsell is not enabled, go to checkout directly
     if (!upsellSettings.upsellOnCheckout) {
+      console.log('No checkout upsell')
       setCheckoutLoading(true)
       await client.checkout.fetch(currentCheckoutId).then((checkout) => {
         // Do something with the checkout
@@ -1250,6 +1252,7 @@ let upsellVariantId
     } else {
       // If the upsell hasn't been shown to the customer yet, trigger the modal
       if (upsellDisplayCount === 0) {
+        console.log('Count:', upsellDisplayCount)
         toggleCart()
         toggleCheckoutUpsellModal()
         checkoutUpsellDisplayCount++
@@ -1258,6 +1261,7 @@ let upsellVariantId
           checkoutUpsellDisplayCount
         )
       } else {
+        console.log('checking out')
         // If the upsell has already been shown, skip the modal and go to checkout
         setCheckoutLoading(true)
         await client.checkout.fetch(currentCheckoutId).then((checkout) => {
