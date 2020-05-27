@@ -1,4 +1,4 @@
-/* @license v0.1.7 Author: Mathew Chan. Copyright ESQIDO LTD. All Rights Reserved. */
+/* @license v0.1.8 Author: Mathew Chan. Copyright ESQIDO LTD. All Rights Reserved. */
 
 // Define variables
 let initCount = 0
@@ -714,9 +714,11 @@ let upsellVariantId
         }
       })
       // Checkout Upsell event listeners
-      $('#checkoutUpsellModal').on('click', '.upsellAddToCart', function (e) {
+      $('#checkoutUpsellModal').on('click', '.upsellAddToCart', async function (
+        e
+      ) {
         addUpsellItem(this.value)
-        checkout()
+        await checkout()
       })
       $('#skipCheckoutUpsell').on('click', function (e) {
         checkout()
@@ -1246,7 +1248,6 @@ let upsellVariantId
         }
       })
     } else {
-      console.log('Checkout upsell count: ', upsellDisplayCount)
       // If the upsell hasn't been shown to the customer yet, trigger the modal
       if (upsellDisplayCount === 0) {
         toggleCart()
@@ -1258,6 +1259,7 @@ let upsellVariantId
         )
       } else {
         // If the upsell has already been shown, skip the modal and go to checkout
+        setCheckoutLoading(true)
         await client.checkout.fetch(currentCheckoutId).then((checkout) => {
           // Do something with the checkout
           if (checkout.webUrl) {
