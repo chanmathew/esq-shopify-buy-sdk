@@ -1,4 +1,4 @@
-/* @license v0.2.1 Author: Mathew Chan. Copyright ESQIDO LTD. All Rights Reserved. */
+/* @license v0.2.2 Author: Mathew Chan. Copyright ESQIDO LTD. All Rights Reserved. */
 
 // Define variables
 let initCount = 0
@@ -1249,7 +1249,7 @@ let upsellVariantId
         checkoutUpsellDisplayCount
       )
       return
-    } else {
+    } else if (!upsellSettings?.upsellOnCheckout || upsellDisplayCount > 0) {
       // If the upsell has already been shown, skip the modal and go to checkout
       setCheckoutLoading(true)
       await client.checkout.fetch(currentCheckoutId).then((checkout) => {
