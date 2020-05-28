@@ -1,4 +1,4 @@
-/* @license v0.2.0 Author: Mathew Chan. Copyright ESQIDO LTD. All Rights Reserved. */
+/* @license v0.2.4 Author: Mathew Chan. Copyright ESQIDO LTD. All Rights Reserved. */
 
 // Define variables
 let initCount = 0
