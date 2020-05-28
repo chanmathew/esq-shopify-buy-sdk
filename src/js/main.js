@@ -1,4 +1,4 @@
-/* @license v0.2.3 Author: Mathew Chan. Copyright ESQIDO LTD. All Rights Reserved. */
+/* @license v0.2.0 Author: Mathew Chan. Copyright ESQIDO LTD. All Rights Reserved. */
 
 // Define variables
 let initCount = 0
@@ -422,6 +422,8 @@ let upsellVariantId
       })
       // Checkout handler
       $('body').on('click', '#checkoutButton', async function (e) {
+        e.stopPropagation()
+        e.stopImmediatePropagation()
         await checkout()
       })
       // Set selected text for Liner
@@ -718,6 +720,8 @@ let upsellVariantId
         'click',
         '.checkoutUpsellAddToCart',
         async function (e) {
+          e.stopPropagation()
+          e.stopImmediatePropagation()
           await addUpsellItem(this.value)
           await checkout()
         }
