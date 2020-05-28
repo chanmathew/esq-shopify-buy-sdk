@@ -1,4 +1,4 @@
-/* @license v0.2.2 Author: Mathew Chan. Copyright ESQIDO LTD. All Rights Reserved. */
+/* @license v0.2.3 Author: Mathew Chan. Copyright ESQIDO LTD. All Rights Reserved. */
 
 // Define variables
 let initCount = 0
@@ -629,7 +629,7 @@ let upsellVariantId
                 <p class="upsellItemTitle">${product.title}</p>
                 <p class="upsellItemPrices"></p>
                 <div class="upsellItemDescription">${product.descriptionHtml}</div>
-                <button class="btn upsellAddToCart" value="${product.variants[0].id}">
+                <button class="btn checkoutUpsellAddToCart" value="${product.variants[0].id}">
                   <img class="spinner" src="https://cdn.shopify.com/s/files/1/0250/1519/files/spinner.svg?v=1585762796" alt="Loading Checkout" />
                   <span class="addToCartText">Add & Checkout</span>
                 </button>
@@ -714,12 +714,14 @@ let upsellVariantId
         }
       })
       // Checkout Upsell event listeners
-      $('#checkoutUpsellModal').on('click', '.upsellAddToCart', async function (
-        e
-      ) {
-        await addUpsellItem(this.value)
-        await checkout()
-      })
+      $('#checkoutUpsellModal').on(
+        'click',
+        '.checkoutUpsellAddToCart',
+        async function (e) {
+          await addUpsellItem(this.value)
+          await checkout()
+        }
+      )
       $('#skipCheckoutUpsell').on('click', async function (e) {
         await checkout()
       })
@@ -1235,12 +1237,13 @@ let upsellVariantId
   }
   const checkout = async function () {
     const currentCheckoutId = fetchFromLocalStorage(lsCheckoutId)
-    const upsellDisplayCount = fetchFromLocalStorage(
+    const upsellDisplayCount = await fetchFromLocalStorage(
       lsCheckoutUpsellDisplayCount
     )
+    console.log('Count:', upsellDisplayCount)
     // If the upsell hasn't been shown to the customer yet, trigger the modal
     if (upsellSettings?.upsellOnCheckout && upsellDisplayCount === 0) {
-      console.log('Count:', upsellDisplayCount)
+      console.log('Showing upsells')
       toggleCart()
       toggleCheckoutUpsellModal()
       checkoutUpsellDisplayCount++
@@ -1248,8 +1251,8 @@ let upsellVariantId
         lsCheckoutUpsellDisplayCount,
         checkoutUpsellDisplayCount
       )
-      return
     } else if (!upsellSettings?.upsellOnCheckout || upsellDisplayCount > 0) {
+      console.log('Checking out')
       // If the upsell has already been shown, skip the modal and go to checkout
       setCheckoutLoading(true)
       await client.checkout.fetch(currentCheckoutId).then((checkout) => {
