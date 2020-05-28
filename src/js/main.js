@@ -422,6 +422,8 @@ let upsellVariantId
       })
       // Checkout handler
       $('body').on('click', '#checkoutButton', async function (e) {
+        e.stopPropagation()
+        e.stopImmediatePropagation()
         await checkout()
       })
       // Set selected text for Liner
@@ -718,6 +720,8 @@ let upsellVariantId
         'click',
         '.checkoutUpsellAddToCart',
         async function (e) {
+          e.stopPropagation()
+          e.stopImmediatePropagation()
           await addUpsellItem(this.value)
           await checkout()
         }
