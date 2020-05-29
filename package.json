@@ -5,9 +5,9 @@
     "main": "index.js",
     "scripts": {
         "build": "webpack --config webpack.config.prod.js",
-        "v:major": "npm run version major",
-        "v:minor": "npm run version minor",
-        "v:patch": "npm run version patch",
+        "v:major": "npm version major",
+        "v:minor": "npm version minor",
+        "v:patch": "npm version patch",
         "deploy": "func() { npm run build && git add . && git commit -m \"$1\" && npm run v:patch && git push origin master --tags;}; func",
         "lint:js": "./node_modules/.bin/eslint src/js/*.js",
         "lint:styles": "stylelint \"src/**/*.scss\"",
