@@ -1,6 +1,6 @@
 {
     "name": "static-html-webpack-boilerplate",
-    "version": "0.2.8",
+    "version": "0.2.7",
     "description": "Modern tooling for old-school static webpage development",
     "main": "index.js",
     "scripts": {
@@ -8,9 +8,9 @@
         "v:major": "npm version major -f",
         "v:minor": "npm version minor -f",
         "v:patch": "npm version patch -f",
-        "release:major": "npm run v:major && npm run build && git add . && git commit -m \"$1\";",
-        "release:minor": "npm run v:minor && npm run build && git add . && git commit -m \"$1\";",
-        "release:patch": "npm run v:patch && npm run build && git add . && git commit -m \"$1\";",
+        "release:major": "func() { npm run v:major && npm run build && git add . && git commit -m \"$1\"; }; func",
+        "release:minor": "func() { npm run v:minor && npm run build && git add . && git commit -m \"$1\"; }; func",
+        "release:patch": "func() { npm run v:patch && npm run build && git add . && git commit -m \"$1\"; }; func",
         "deploy": "func() { git push origin master --tags; }; func",
         "lint:js": "./node_modules/.bin/eslint src/js/*.js",
         "lint:styles": "stylelint \"src/**/*.scss\"",
