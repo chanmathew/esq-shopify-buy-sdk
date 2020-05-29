@@ -488,12 +488,16 @@ body.cartOpen #cart {
   #upsellItemModal {
     top: 0;
     bottom: 0;
+    height: 100%;
+    overflow: auto;
     .upsellItemGalleryContainer {
       padding-top: 1rem;
       max-width: 100%;
     }
   }
   #checkoutUpsellModal {
+    height: 100%;
+    overflow: auto;
     .checkoutUpsellProduct {
       flex: none;
       width: 100%;
