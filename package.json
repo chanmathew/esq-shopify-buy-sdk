@@ -1,6 +1,6 @@
 {
     "name": "static-html-webpack-boilerplate",
-    "version": "0.2.8",
+    "version": "0.2.7",
     "description": "Modern tooling for old-school static webpage development",
     "main": "index.js",
     "scripts": {
@@ -8,7 +8,10 @@
         "v:major": "npm version major -f",
         "v:minor": "npm version minor -f",
         "v:patch": "npm version patch -f",
-        "deploy": "func() { npm run v:patch && npm run build && git add . && git commit -m \"$1\" && git push origin master --tags;}; func",
+        "release:major": "npm run v:major && npm run build && git add . && git commit -m \"$1\"",
+        "release:minor": "npm run v:minor && npm run build && git add . && git commit -m \"$1\"",
+        "release:patch": "npm run v:patch && npm run build && git add . && git commit -m \"$1\"",
+        "deploy": "func() { git push origin master --tags; }; func",
         "lint:js": "./node_modules/.bin/eslint src/js/*.js",
         "lint:styles": "stylelint \"src/**/*.scss\"",
         "lint:html": "pa11y-ci ./src/**/*.html",
@@ -58,9 +61,15 @@
         "webpack-dev-server": "^3.9.0",
         "webpack-merge": "^4.2.2"
     },
+    "babel": {
+        "presets": [
+            "@babel/env"
+        ]
+    },
     "browserslist": [
-        "> 0.2%",
-        "last 2 versions"
+        "> 0.5%",
+        "last 2 versions",
+        "ios 8"
     ],
     "dependencies": {
         "npm-version": "^1.1.0"
