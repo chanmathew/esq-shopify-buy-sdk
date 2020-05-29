@@ -1,6 +1,6 @@
 {
     "name": "static-html-webpack-boilerplate",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "description": "Modern tooling for old-school static webpage development",
     "main": "index.js",
     "scripts": {
@@ -50,6 +50,7 @@
         "postcss-loader": "^3.0.0",
         "prettier": "^2.0.2",
         "raw-loader": "^3.1.0",
+        "regenerator-runtime": "^0.13.5",
         "sass-loader": "^8.0.2",
         "style-loader": "^1.0.1",
         "stylelint": "^13.2.0",

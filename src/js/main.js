@@ -1,3 +1,6 @@
+// Import Babel regenerator
+import regeneratorRuntime from 'regenerator-runtime'
+
 // Define variables
 let initCount = 0
 let itemCount = 0
