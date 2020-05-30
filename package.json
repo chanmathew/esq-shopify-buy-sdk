@@ -1,6 +1,6 @@
 {
     "name": "static-html-webpack-boilerplate",
-    "version": "0.4.1",
+    "version": "0.4.2",
     "description": "Modern tooling for old-school static webpage development",
     "main": "index.js",
     "scripts": {
@@ -26,8 +26,10 @@
     "devDependencies": {
         "@babel/cli": "^7.7.4",
         "@babel/core": "^7.8.6",
+        "@babel/plugin-transform-runtime": "^7.10.1",
         "@babel/polyfill": "^7.10.1",
         "@babel/preset-env": "^7.10.1",
+        "@babel/runtime": "^7.10.2",
         "autoprefixer": "^9.1.5",
         "babel-eslint": "^10.1.0",
         "babel-loader": "^8.1.0",
@@ -61,11 +63,6 @@
         "webpack-cli": "^3.1.0",
         "webpack-dev-server": "^3.9.0",
         "webpack-merge": "^4.2.2"
-    },
-    "babel": {
-        "presets": [
-            "@babel/env"
-        ]
     },
     "browserslist": [
         "> 0.5%",
