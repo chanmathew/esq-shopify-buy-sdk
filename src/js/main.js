@@ -5,10 +5,10 @@ import regeneratorRuntime from 'regenerator-runtime'
 let initCount = 0
 let itemCount = 0
 let slickInitCount = 0
-let checkoutUpsellDisplayCount = 0
+// let checkoutUpsellDisplayCount = 0
 let lsCheckoutId = 'esq_eyeliner_checkout_id'
 let lsCartId = 'esq_eyeliner_cart'
-let lsCheckoutUpsellDisplayCount = 'esq_checkout_upsell_display_count'
+// let lsCheckoutUpsellDisplayCount = 'esq_checkout_upsell_display_count'
 let cartOpen = false
 let modalOpen = false
 let checkoutUpsellModalOpen = false
@@ -466,15 +466,15 @@ let upsellVariantId
       console.log('Please initialize Client first.')
     } else {
       // Define the LS key for checkout upsell count
-      const upsellDisplayCount = fetchFromLocalStorage(
-        lsCheckoutUpsellDisplayCount
-      )
+      // const upsellDisplayCount = fetchFromLocalStorage(
+      //   lsCheckoutUpsellDisplayCount
+      // )
       if (upsellSettings.upsellOnCheckout) {
-        if (upsellDisplayCount) {
-          checkoutUpsellDisplayCount = upsellDisplayCount
-        } else {
-          persistToLocalStorage(lsCheckoutUpsellDisplayCount, 0)
-        }
+        // if (upsellDisplayCount) {
+        //   checkoutUpsellDisplayCount = upsellDisplayCount
+        // } else {
+        //   persistToLocalStorage(lsCheckoutUpsellDisplayCount, 0)
+        // }
       }
       if (upsellSettings.cartUpsell) {
         await fetchProduct(self, upsellSettings.cartUpsell)
@@ -592,7 +592,7 @@ let upsellVariantId
             <div id="checkoutUpsellModal" class="upsellModal">
               <div id="checkoutUpsellModalContainer">
                 <p class="checkoutSpsellModalSubhead">Customize Your Order</p>
-                <h3>Add an Esqido Premium Lashes Kit at -40% OFF!</h3>
+                <h3>Add an Esqido Premium Lashes Kit at <span class="checkoutUpsellOfferText">40%</span> OFF!</h3>
                 <div class="upsellHighlights">
                   <div class="upsellHighlightItem">
                     <img src="https://cdn.shopify.com/s/files/1/0250/1519/t/27/assets/time-icon.svg?v=1269636006768805444" alt="">
@@ -1242,21 +1242,19 @@ let upsellVariantId
   }
   const checkout = async function () {
     const currentCheckoutId = fetchFromLocalStorage(lsCheckoutId)
-    const upsellDisplayCount = await fetchFromLocalStorage(
-      lsCheckoutUpsellDisplayCount
-    )
-    // If the upsell hasn't been shown to the customer yet, trigger the modal
-    if (upsellSettings?.upsellOnCheckout && upsellDisplayCount === 0) {
+    // Disabling the upsell count check
+    // const upsellDisplayCount = await fetchFromLocalStorage(
+    //   lsCheckoutUpsellDisplayCount
+    // )
+    if (upsellSettings?.upsellOnCheckout) {
       toggleCart()
       toggleCheckoutUpsellModal()
-      checkoutUpsellDisplayCount++
-      persistToLocalStorage(
-        lsCheckoutUpsellDisplayCount,
-        checkoutUpsellDisplayCount
-      )
-    } else if (!upsellSettings?.upsellOnCheckout || upsellDisplayCount > 99) {
-      // Making it show the popup on the first 99 times they click as a temp fix if we wnat to limit it to only first time later.
-      // If the upsell has already been shown, skip the modal and go to checkout
+      // checkoutUpsellDisplayCount++
+      // persistToLocalStorage(
+      //   lsCheckoutUpsellDisplayCount,
+      //   checkoutUpsellDisplayCount
+      // )
+    } else {
       setCheckoutLoading(true)
       await client.checkout.fetch(currentCheckoutId).then((checkout) => {
         // Do something with the checkout

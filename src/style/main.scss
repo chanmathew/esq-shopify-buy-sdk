@@ -195,7 +195,9 @@ input[type="number"] {
   cursor: pointer;
   border: none;
   &.secondary {
-    background: #555555;
+    background: none;
+    border: 1px solid #8d8d8d;
+    color: #8d8d8d;
   }
 }
 .btn:disabled {
@@ -455,11 +457,17 @@ body.cartOpen #cart {
   }
 }
 #checkoutUpsellModal {
+  h3 {
+    font-size: 32px;
+  }
   .upsellItemListing {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
     margin-top: 2rem;
+  }
+  .checkoutUpsellOfferText {
+    color: red;
   }
   .checkoutUpsellProduct {
     flex: 1;
