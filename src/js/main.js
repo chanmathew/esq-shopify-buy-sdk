@@ -728,7 +728,14 @@ let upsellVariantId
         }
       )
       $('#skipCheckoutUpsell').on('click', async function (e) {
-        await checkout()
+        setCheckoutLoading(true)
+        const currentCheckoutId = fetchFromLocalStorage(lsCheckoutId)
+        await client.checkout.fetch(currentCheckoutId).then((checkout) => {
+          // Do something with the checkout
+          if (checkout.webUrl) {
+            location.href = checkout.webUrl
+          }
+        })
       })
     }
   }
