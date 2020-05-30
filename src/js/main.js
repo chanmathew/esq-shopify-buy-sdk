@@ -1245,10 +1245,8 @@ let upsellVariantId
     const upsellDisplayCount = await fetchFromLocalStorage(
       lsCheckoutUpsellDisplayCount
     )
-    console.log('Count:', upsellDisplayCount)
     // If the upsell hasn't been shown to the customer yet, trigger the modal
     if (upsellSettings?.upsellOnCheckout && upsellDisplayCount === 0) {
-      console.log('Showing upsells')
       toggleCart()
       toggleCheckoutUpsellModal()
       checkoutUpsellDisplayCount++
@@ -1256,8 +1254,8 @@ let upsellVariantId
         lsCheckoutUpsellDisplayCount,
         checkoutUpsellDisplayCount
       )
-    } else if (!upsellSettings?.upsellOnCheckout || upsellDisplayCount > 0) {
-      console.log('Checking out')
+    } else if (!upsellSettings?.upsellOnCheckout || upsellDisplayCount > 99) {
+      // Making it show the popup on the first 99 times they click as a temp fix if we wnat to limit it to only first time later.
       // If the upsell has already been shown, skip the modal and go to checkout
       setCheckoutLoading(true)
       await client.checkout.fetch(currentCheckoutId).then((checkout) => {

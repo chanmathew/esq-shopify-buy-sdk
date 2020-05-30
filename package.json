@@ -1,6 +1,6 @@
 {
     "name": "static-html-webpack-boilerplate",
-    "version": "0.4.2",
+    "version": "0.4.4",
     "description": "Modern tooling for old-school static webpage development",
     "main": "index.js",
     "scripts": {
@@ -65,7 +65,7 @@
         "webpack-merge": "^4.2.2"
     },
     "browserslist": [
-        "> 0.5%",
+        "> 1%",
         "last 2 versions",
         "ios 8"
     ],
