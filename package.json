@@ -1,13 +1,13 @@
 {
     "name": "static-html-webpack-boilerplate",
-    "version": "0.4.0",
+    "version": "0.2.7",
     "description": "Modern tooling for old-school static webpage development",
     "main": "index.js",
     "scripts": {
         "build": "webpack --config webpack.config.prod.js",
-        "v:major": "npm version major -f",
-        "v:minor": "npm version minor -f",
-        "v:patch": "npm version patch -f",
+        "v:major": "webpack --config webpack.config.prod.js --env.major",
+        "v:minor": "webpack --config webpack.config.prod.js --env.minor",
+        "v:patch": "webpack --config webpack.config.prod.js --env.patch",
         "release:major": "func() { npm run v:major && npm run build; }; func",
         "release:minor": "func() { npm run v:minor && npm run build; }; func",
         "release:patch": "func() { npm run v:patch && npm run build; }; func",

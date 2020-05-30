@@ -36,7 +36,7 @@ module.exports = merge(common, {
       PACKAGE_JSON_PATH: './package.json',
       SHORT: '© ESQIDO LTD. Author: Mathew Chan.',
       components: {
-        AutoIncreaseVersion: false,
+        AutoIncreaseVersion: true,
         InjectAsComment: true,
       },
     }),
