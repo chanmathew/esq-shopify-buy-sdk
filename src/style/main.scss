@@ -457,6 +457,10 @@ body.cartOpen #cart {
   }
 }
 #checkoutUpsellModal {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   h3 {
     font-size: 32px;
   }
@@ -510,6 +514,19 @@ body.cartOpen #cart {
       flex: none;
       width: 100%;
       margin-bottom: 2rem;
+    }
+    #skipCheckoutUpsellBar {
+      background: white;
+      box-shadow: 1px -2px 12px 0px rgba(0, 0, 0, 0.25);
+      text-align: center;
+      padding: 1rem;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+    #skipCheckoutUpsell {
+      margin: 0 auto;
     }
   }
 }

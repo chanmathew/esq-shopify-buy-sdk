@@ -608,10 +608,9 @@ let upsellVariantId
                   </div>
                 </div>
                 <div class="upsellItemListing"></div>
-                <button id="skipCheckoutUpsell" class="btn secondary">No thanks, take me to checkout</button>
-                <button id="closeModal">
-                  <img src="https://uploads-ssl.webflow.com/5e70f8e5d7461820999a0cf5/5e7b70d9dd8fc24bf01bc3be_close.svg" alt="Close" />
-                </button>
+                <div id="skipCheckoutUpsellBar">
+                  <button id="skipCheckoutUpsell" class="btn secondary">No thanks, take me to checkout</button>
+                </div>
               </div>
             </div>
           `)
