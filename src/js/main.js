@@ -335,9 +335,9 @@ let upsellVariantId
           <div id="cartEmpty">
               <p>Your bag's empty 🛍. Go shopping!</p>
           </div>
-          <button id="checkoutButton" class="btn">
+          <button id="checkout" class="checkoutButton btn">
             <img class="spinner" src="https://cdn.shopify.com/s/files/1/0250/1519/files/spinner.svg?v=1585762796" alt="Loading Checkout" />
-            <span id="checkoutButtonText">Checkout</span>
+            <span class="checkoutButtonText">Checkout</span>
           </button>
         `)
       }
@@ -422,10 +422,15 @@ let upsellVariantId
         removeItems(e.target.dataset.value)
       })
       // Checkout handler
-      $('body').on('click', '#checkoutButton', async function (e) {
+      $('body').on('click', '#checkout', async function (e) {
         e.stopPropagation()
         e.stopImmediatePropagation()
-        await checkout()
+        if (upsellSettings?.upsellOnCheckout) {
+          toggleCart()
+          toggleCheckoutUpsellModal()
+        } else {
+          await checkout()
+        }
       })
       // Set selected text for Liner
       self.on('click', '.unit-option, .variant-option', function (e) {
@@ -609,7 +614,10 @@ let upsellVariantId
                 </div>
                 <div class="upsellItemListing"></div>
                 <div id="skipCheckoutUpsellBar">
-                  <button id="skipCheckoutUpsell" class="btn secondary">No thanks, take me to checkout</button>
+                  <button id="skipCheckoutUpsell" class="checkoutButton btn secondary">
+                    <img class="spinner" src="https://cdn.shopify.com/s/files/1/0250/1519/files/spinner.svg?v=1585762796" alt="Loading Checkout" />
+                    <span class="checkoutButtonText">No thanks, take me to checkout</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -631,7 +639,7 @@ let upsellVariantId
                 <p class="upsellItemTitle">${product.title}</p>
                 <p class="upsellItemPrices"></p>
                 <div class="upsellItemDescription">${product.descriptionHtml}</div>
-                <button class="btn checkoutUpsellAddToCart" value="${product.variants[0].id}">
+                <button class="btn checkoutUpsellAddToCart addToCart" value="${product.variants[0].id}">
                   <img class="spinner" src="https://cdn.shopify.com/s/files/1/0250/1519/files/spinner.svg?v=1585762796" alt="Loading Checkout" />
                   <span class="addToCartText">Add & Checkout</span>
                 </button>
@@ -652,8 +660,8 @@ let upsellVariantId
         }
       }
       /*
-          Upsell Event Listeners 
-        */
+        Upsell Event Listeners 
+      */
       // Check when the variant option changes for the upsell in cart
       $('#cart').on('change', '.upsellProductOption', function (e) {
         const variant = recursiveArraySearch(
@@ -715,7 +723,9 @@ let upsellVariantId
           toggleCheckoutUpsellModal()
         }
       })
-      // Checkout Upsell event listeners
+      /*
+        Checkout Upsell Event Listeners 
+      */
       $('#checkoutUpsellModal').on(
         'click',
         '.checkoutUpsellAddToCart',
@@ -727,14 +737,7 @@ let upsellVariantId
         }
       )
       $('#skipCheckoutUpsell').on('click', async function (e) {
-        setCheckoutLoading(true)
-        const currentCheckoutId = fetchFromLocalStorage(lsCheckoutId)
-        await client.checkout.fetch(currentCheckoutId).then((checkout) => {
-          // Do something with the checkout
-          if (checkout.webUrl) {
-            location.href = checkout.webUrl
-          }
-        })
+        await checkout()
       })
     }
   }
@@ -802,13 +805,13 @@ let upsellVariantId
   }
   const setCheckoutLoading = function (boolean) {
     if (boolean) {
-      $('#checkoutButton').attr('disabled', true)
-      $('#checkoutButtonText').hide()
-      $('#checkoutButton .spinner').show()
+      $('.checkoutButton').attr('disabled', true)
+      $('.checkoutButtonText').hide()
+      $('.checkoutButton .spinner').show()
     } else {
-      $('#checkoutButton').attr('disabled', false)
-      $('#checkoutButton .spinner').hide()
-      $('#checkoutButtonText').show()
+      $('.checkoutButton').attr('disabled', false)
+      $('.checkoutButton .spinner').hide()
+      $('.checkoutButtonText').show()
     }
   }
   const toggleCart = function () {
@@ -1127,7 +1130,7 @@ let upsellVariantId
     const cartItems = fetchFromLocalStorage(lsCartId)
     // Render items in checkout in cart
     if (cartItems?.length) {
-      $('#checkoutButton').show()
+      $('.checkoutButton').show()
       $('#cartEmpty').hide()
       let priceCount = 0
       // For each item in cartItems, render until they've all been rendered
@@ -1182,7 +1185,7 @@ let upsellVariantId
       }
     } else {
       $('#cartEmpty').show()
-      $('#checkoutButton').hide()
+      $('.checkoutButton').hide()
       $('#cartCount').text(0)
     }
   }
@@ -1247,28 +1250,14 @@ let upsellVariantId
     createCartItems()
   }
   const checkout = async function () {
+    setCheckoutLoading(true)
     const currentCheckoutId = fetchFromLocalStorage(lsCheckoutId)
-    // Disabling the upsell count check
-    // const upsellDisplayCount = await fetchFromLocalStorage(
-    //   lsCheckoutUpsellDisplayCount
-    // )
-    if (upsellSettings?.upsellOnCheckout) {
-      toggleCart()
-      toggleCheckoutUpsellModal()
-      // checkoutUpsellDisplayCount++
-      // persistToLocalStorage(
-      //   lsCheckoutUpsellDisplayCount,
-      //   checkoutUpsellDisplayCount
-      // )
-    } else {
-      setCheckoutLoading(true)
-      await client.checkout.fetch(currentCheckoutId).then((checkout) => {
-        // Do something with the checkout
-        if (checkout.webUrl) {
-          location.href = checkout.webUrl
-        }
-      })
-    }
+    await client.checkout.fetch(currentCheckoutId).then((checkout) => {
+      // Do something with the checkout
+      if (checkout.webUrl) {
+        location.href = checkout.webUrl
+      }
+    })
   }
   const trackFbEvent = function (self, variantId) {
     // Add Facebook Tracking

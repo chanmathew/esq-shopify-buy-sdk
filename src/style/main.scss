@@ -175,7 +175,7 @@ input[type="number"] {
   height: 32px;
 }
 .addToCart,
-#checkoutButton {
+.checkoutButton {
   width: 100%;
 }
 .btn {
@@ -195,7 +195,7 @@ input[type="number"] {
   cursor: pointer;
   border: none;
   &.secondary {
-    background: none;
+    background: white;
     border: 1px solid #8d8d8d;
     color: #8d8d8d;
   }
@@ -510,6 +510,7 @@ body.cartOpen #cart {
   #checkoutUpsellModal {
     height: 100%;
     overflow: auto;
+    padding-bottom: 6rem;
     .checkoutUpsellProduct {
       flex: none;
       width: 100%;
