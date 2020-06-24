@@ -5,9 +5,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Esqido Product</title>
-  <script type="text/javascript" src="js/slick.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
   <script src="https://sdks.shopifycdn.com/js-buy-sdk/v2/latest/index.umd.min.js"></script>
+  <script type="text/javascript" src="js/slick.js"></script>
 </head>
 
 <body>
@@ -22,7 +22,9 @@
   <div id="upsell1" class="product"></div>
   <script>
     $(function () {
-      $('#product1').plugin();
+      $('#product1').plugin({
+        disableCartDrawer: true
+      });
       $('#cartUpsells').pluginUpsell({
         productHandle: 'unisyn-essentials-kit',
         heading: 'Limited time offer! 50% off two popular lash styles with Liner purchase!',
@@ -30,7 +32,7 @@
         discountCode: 'AD-UPS-ULKIT-50',
         discountType: "percentage",
         discountAmount: 50,
-        upsellOnCheckout: true
+        upsellOnAddToCart: true
       })
     });
   </script>

@@ -41,6 +41,7 @@
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
+  background: none;
   border: 3px solid lightgray;
   border-radius: 4px;
   position: absolute;
@@ -87,6 +88,12 @@
 }
 .variant-option[data-value="brown"] {
   background-color: #523737;
+}
+.variant-option[data-value="navy"] {
+  background-color: #091d42;
+}
+.variant-option[data-value="gray"] {
+  background-color: #8a8a8a;
 }
 .variant-option[data-value="black-brown"] {
   background-image: url(https://uploads-ssl.webflow.com/5e70f8e5d7461820999a0cf5/5e719aadd37a816e1a63b421_black-brown.png);
@@ -374,19 +381,22 @@ body.cartOpen #cart {
   height: max-content;
   max-width: 800px;
 }
-#checkoutUpsellModal {
+#fullscreenUpsellModal {
   top: 25px;
   right: 25px;
   bottom: 25px;
   left: 25px;
-  #checkoutUpsellModalContainer {
+  #fullscreenUpsellModalContainer {
     position: relative;
     padding: 1.5rem;
-    .checkoutSpsellModalSubhead {
+    .fullscreenUpsellModalSubhead {
       text-align: center;
+      margin-bottom: 0.5rem;
     }
     h3 {
       text-align: center;
+      margin-top: 0;
+      margin-bottom: 1.5rem;
     }
   }
   .upsellHighlights {
@@ -456,7 +466,7 @@ body.cartOpen #cart {
     right: 0.5rem;
   }
 }
-#checkoutUpsellModal {
+#fullscreenUpsellModal {
   top: 0;
   right: 0;
   bottom: 0;
@@ -470,20 +480,20 @@ body.cartOpen #cart {
     justify-content: space-between;
     margin-top: 2rem;
   }
-  .checkoutUpsellOfferText {
+  .fullscreenUpsellOfferText {
     color: red;
   }
-  .checkoutUpsellProduct {
+  .fullscreenUpsellProduct {
     flex: 1;
     overflow: hidden;
     flex-direction: column;
     padding: 0 0.5rem;
   }
-  .checkoutUpsellItemGalleryContainer {
+  .fullscreenUpsellItemGalleryContainer {
     min-width: 0;
     min-height: 0;
   }
-  .checkoutUpsellImage {
+  .fullscreenUpsellImage {
     width: 100%;
     height: auto;
   }
@@ -491,7 +501,7 @@ body.cartOpen #cart {
     width: 80px;
     height: auto;
   }
-  #skipCheckoutUpsell {
+  #skipfullscreenUpsell {
     text-align: center;
     margin: 3rem auto;
   }
@@ -507,16 +517,17 @@ body.cartOpen #cart {
       max-width: 100%;
     }
   }
-  #checkoutUpsellModal {
+  #fullscreenUpsellModal {
     height: 100%;
     overflow: auto;
     padding-bottom: 6rem;
-    .checkoutUpsellProduct {
+    padding-top: 4rem;
+    .fullscreenUpsellProduct {
       flex: none;
       width: 100%;
       margin-bottom: 2rem;
     }
-    #skipCheckoutUpsellBar {
+    #skipfullscreenUpsellBar {
       background: white;
       box-shadow: 1px -2px 12px 0px rgba(0, 0, 0, 0.25);
       text-align: center;
@@ -527,7 +538,7 @@ body.cartOpen #cart {
       right: 0;
       z-index: 2;
     }
-    #skipCheckoutUpsell {
+    #skipfullscreenUpsell {
       margin: 0 auto;
     }
   }

@@ -1,17 +1,14 @@
-// Import Babel regenerator
-import regeneratorRuntime from 'regenerator-runtime'
-
 // Define variables
 let initCount = 0
 let itemCount = 0
 let slickInitCount = 0
-// let checkoutUpsellDisplayCount = 0
+// let fullscreenUpsellDisplayCount = 0
 let lsCheckoutId = 'esq_eyeliner_checkout_id'
 let lsCartId = 'esq_eyeliner_cart'
-// let lsCheckoutUpsellDisplayCount = 'esq_checkout_upsell_display_count'
+// let lsfullscreenUpsellDisplayCount = 'esq_checkout_upsell_display_count'
 let cartOpen = false
 let modalOpen = false
-let checkoutUpsellModalOpen = false
+let fullscreenUpsellModalOpen = false
 let client
 let clientSettings
 let upsellSettings
@@ -25,7 +22,7 @@ let upsellVariantId
       {
         domain: 'esqido.com',
         storefrontAccessToken: '05f86644045cc5fc6cc10718814e3f31',
-        productHandle: 'gel-liner-pencil',
+        productHandle: 'gel-pencil-eyeliners',
         defaultOption: '2-Pack',
         defaultCurrency: 'USD',
         defaultRegion: 'en-US',
@@ -408,14 +405,20 @@ let upsellVariantId
           event.stopImmediatePropagation()
           if (modalOpen) {
             toggleModal()
-          } else if (checkoutUpsellModalOpen) {
-            toggleCheckoutUpsellModal()
+          } else if (fullscreenUpsellModalOpen) {
+            togglefullscreenUpsellModal()
           }
         })
       }
       // Add to cart handler
       self.find('.addToCart').on('click', function (e) {
-        addItems(self, 'cart')
+        addItems(self)
+        if (!clientSettings.disableCartDrawer) {
+          toggleCart()
+        }
+        if (upsellSettings?.upsellOnAddToCart) {
+          togglefullscreenUpsellModal()
+        }
       })
       // Handle removing line items in cart
       $('body').on('click', '.cart-item-remove', function (e) {
@@ -427,7 +430,7 @@ let upsellVariantId
         e.stopImmediatePropagation()
         if (upsellSettings?.upsellOnCheckout) {
           toggleCart()
-          toggleCheckoutUpsellModal()
+          togglefullscreenUpsellModal()
         } else {
           await checkout()
         }
@@ -457,9 +460,8 @@ let upsellVariantId
         discountCode: null,
         discountType: null,
         discountAmount: null,
-        upsellOnCheckout: true,
         cartUpsell: null,
-        checkoutUpsells: [
+        fullscreenUpsells: [
           'unisyn-classic-bundle',
           'unisyn-wispy-bundle',
           'unisyn-glam-bundle',
@@ -470,17 +472,20 @@ let upsellVariantId
     if (!client) {
       console.log('Please initialize Client first.')
     } else {
+      /*
+        Disabling the check for how many times the upsell screen has been shown, uncomment this section to enable again.
+      */
       // Define the LS key for checkout upsell count
       // const upsellDisplayCount = fetchFromLocalStorage(
-      //   lsCheckoutUpsellDisplayCount
+      //   lsfullscreenUpsellDisplayCount
       // )
-      if (upsellSettings.upsellOnCheckout) {
-        // if (upsellDisplayCount) {
-        //   checkoutUpsellDisplayCount = upsellDisplayCount
-        // } else {
-        //   persistToLocalStorage(lsCheckoutUpsellDisplayCount, 0)
-        // }
-      }
+      // if (upsellSettings.upsellOnCheckout) {
+      //   if (upsellDisplayCount) {
+      //     fullscreenUpsellDisplayCount = upsellDisplayCount
+      //   } else {
+      //     persistToLocalStorage(lsfullscreenUpsellDisplayCount, 0)
+      //   }
+      // }
       if (upsellSettings.cartUpsell) {
         await fetchProduct(self, upsellSettings.cartUpsell)
         const product = self.data('product')
@@ -590,14 +595,14 @@ let upsellVariantId
           }
         }
       }
-      if (upsellSettings.upsellOnCheckout) {
-        const upsells = upsellSettings?.checkoutUpsells
+      if (upsellSettings?.fullscreenUpsells) {
+        const upsells = upsellSettings?.fullscreenUpsells
         $('body').append(`
             <div id="modalOverlay"></div>
-            <div id="checkoutUpsellModal" class="upsellModal">
-              <div id="checkoutUpsellModalContainer">
-                <p class="checkoutSpsellModalSubhead">Customize Your Order</p>
-                <h3>Add an Esqido Premium Lashes Kit at <span class="checkoutUpsellOfferText">40%</span> OFF!</h3>
+            <div id="fullscreenUpsellModal" class="upsellModal">
+              <div id="fullscreenUpsellModalContainer">
+                <p class="fullscreenUpsellModalSubhead">Customize Your Order</p>
+                <h3>Add an Esqido Premium Lashes Kit at <span class="fullscreenUpsellOfferText">40%</span> OFF!</h3>
                 <div class="upsellHighlights">
                   <div class="upsellHighlightItem">
                     <img src="https://cdn.shopify.com/s/files/1/0250/1519/t/27/assets/time-icon.svg?v=1269636006768805444" alt="">
@@ -613,8 +618,8 @@ let upsellVariantId
                   </div>
                 </div>
                 <div class="upsellItemListing"></div>
-                <div id="skipCheckoutUpsellBar">
-                  <button id="skipCheckoutUpsell" class="checkoutButton btn secondary">
+                <div id="skipfullscreenUpsellBar">
+                  <button id="skipfullscreenUpsell" class="checkoutButton btn secondary">
                     <img class="spinner" src="https://cdn.shopify.com/s/files/1/0250/1519/files/spinner.svg?v=1585762796" alt="Loading Checkout" />
                     <span class="checkoutButtonText">No thanks, take me to checkout</span>
                   </button>
@@ -623,34 +628,36 @@ let upsellVariantId
             </div>
           `)
         if (upsells.length) {
-          const container = $('#checkoutUpsellModal').find('.upsellItemListing')
+          const container = $('#fullscreenUpsellModal').find(
+            '.upsellItemListing'
+          )
           await upsells.map(async (item, i) => {
             container.append(`
-                <div class="checkoutUpsellProduct product-${i}">
+                <div class="fullscreenUpsellProduct product-${i}">
                 </div>
               `)
             const productContainer = container.find(`.product-${i}`)
             await fetchProduct(productContainer, item)
             const product = productContainer.data('product')
             productContainer.append(`
-                <div class="checkoutUpsellItemGalleryContainer">
-                  <div class="checkoutUpsellItemGallery"></div>
+                <div class="fullscreenUpsellItemGalleryContainer">
+                  <div class="fullscreenUpsellItemGallery"></div>
                 </div>
                 <p class="upsellItemTitle">${product.title}</p>
                 <p class="upsellItemPrices"></p>
                 <div class="upsellItemDescription">${product.descriptionHtml}</div>
-                <button class="btn checkoutUpsellAddToCart addToCart" value="${product.variants[0].id}">
+                <button class="btn fullscreenUpsellAddToCart addToCart" value="${product.variants[0].id}">
                   <img class="spinner" src="https://cdn.shopify.com/s/files/1/0250/1519/files/spinner.svg?v=1585762796" alt="Loading Checkout" />
                   <span class="addToCartText">Add & Checkout</span>
                 </button>
               `)
             const priceContainer = productContainer.find('.upsellItemPrices')
             const galleryContainer = productContainer.find(
-              '.checkoutUpsellItemGallery'
+              '.fullscreenUpsellItemGallery'
             )
             $.each(product.images, function (i, img) {
               $(galleryContainer).append(`
-                <img class="checkoutUpsellImage" src="${img.src}" alt="${img.altText}">
+                <img class="fullscreenUpsellImage" src="${img.src}" alt="${img.altText}">
               `)
             })
             product.variants.map((variant) =>
@@ -719,16 +726,16 @@ let upsellVariantId
           toggleCart()
         } else if (modalOpen) {
           toggleModal()
-        } else if (checkoutUpsellModalOpen) {
-          toggleCheckoutUpsellModal()
+        } else if (fullscreenUpsellModalOpen) {
+          togglefullscreenUpsellModal()
         }
       })
       /*
         Checkout Upsell Event Listeners 
       */
-      $('#checkoutUpsellModal').on(
+      $('#fullscreenUpsellModal').on(
         'click',
-        '.checkoutUpsellAddToCart',
+        '.fullscreenUpsellAddToCart',
         async function (e) {
           e.stopPropagation()
           e.stopImmediatePropagation()
@@ -736,7 +743,7 @@ let upsellVariantId
           await checkout()
         }
       )
-      $('#skipCheckoutUpsell').on('click', async function (e) {
+      $('#skipfullscreenUpsell').on('click', async function (e) {
         await checkout()
       })
     }
@@ -756,12 +763,12 @@ let upsellVariantId
       slickInitCount++
     }
   }
-  const toggleCheckoutUpsellModal = function () {
-    checkoutUpsellModalOpen = !checkoutUpsellModalOpen
+  const togglefullscreenUpsellModal = function () {
+    fullscreenUpsellModalOpen = !fullscreenUpsellModalOpen
     $('body').toggleClass('modalOpen')
-    $('#checkoutUpsellModal').fadeToggle()
-    if (checkoutUpsellModalOpen && slickInitCount === 0) {
-      $('.checkoutUpsellItemGallery').slick({
+    $('#fullscreenUpsellModal').fadeToggle()
+    if (fullscreenUpsellModalOpen && slickInitCount === 0) {
+      $('.fullscreenUpsellItemGallery').slick({
         arrows: true,
         dots: true,
       })
@@ -1056,7 +1063,7 @@ let upsellVariantId
       }
     }
   }
-  const addItems = async function (self, toggleElement) {
+  const addItems = async function (self) {
     // Reset the item count so it will rerender the cart from scratch
     itemCount = 0
     // Set loading states for buttons
@@ -1106,12 +1113,6 @@ let upsellVariantId
       setCheckoutLoading(false)
       // Rerender cart
       createCartItems()
-      if (toggleElement === 'cart') {
-        toggleCart()
-      } else if (toggleElement === 'modal') {
-        toggleModal()
-        toggleCart()
-      }
     }
   }
   const addDiscountToCheckout = async function (discountCode) {
@@ -1258,6 +1259,7 @@ let upsellVariantId
         location.href = checkout.webUrl
       }
     })
+    setCheckoutLoading(false)
   }
   const trackFbEvent = function (self, variantId) {
     // Add Facebook Tracking
