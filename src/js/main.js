@@ -671,6 +671,7 @@ let upsellVariantId
       */
       // Check when the variant option changes for the upsell in cart
       $('#cart').on('change', '.upsellProductOption', function (e) {
+        const product = self.data('product')
         const variant = recursiveArraySearch(
           product.variants,
           e.target.value
@@ -678,8 +679,13 @@ let upsellVariantId
         const container = self.find('.upsellItemPrices').empty()
         createPrices(variant, container)
       })
+      // Trigger upsell modal
+      $('#cart').on('click', '.upsellItemTitle', function (e) {
+        toggleModal()
+      })
       // Check when the variant option changes for the upsell in modal
       $('#upsellItemModal').on('change', '.upsellProductOption', function (e) {
+        const product = self.data('product')
         const variant = recursiveArraySearch(
           product.variants,
           e.target.value
@@ -687,11 +693,7 @@ let upsellVariantId
         const container = $('#upsellItemModal')
           .find('.upsellItemPrices')
           .empty()
-        if (upsellSettings?.discountCode) {
-          createPrices(variant, container)
-        } else {
-          createPrices(variant, container)
-        }
+        createPrices(variant, container)
       })
       self.find('.upsellAddToCart').on('click', function (e) {
         const selectedUpsell = self.find('.unit-option:selected')
@@ -898,17 +900,9 @@ let upsellVariantId
         const comparePriceFormatted = formattedPrices?.comparePrice
         let discountPrice
         if (discountType === 'percentage') {
-          if (comparePrice) {
-            discountPrice = comparePrice * (discountAmount / 100)
-          } else {
-            discountPrice = price * (discountAmount / 100)
-          }
+          discountPrice = price * (1 - discountAmount / 100)
         } else if (discountType === 'fixed') {
-          if (comparePrice) {
-            discountPrice = comparePrice - discountAmount
-          } else {
-            discountPrice = price - discountAmount
-          }
+          discountPrice = price - discountAmount
         }
         const discountPriceFormatted = priceFormatter.format(discountPrice)
         $(container).append(`
@@ -1107,17 +1101,22 @@ let upsellVariantId
             extractLineItems(checkout.lineItems)
           }
         })
-        .catch((error) => console.log("Couldn't add item to checkout: ", error))
+        .catch((error) => {
+          console.log("Couldn't add item to checkout: ", error)
+          clearCartAndCheckout()
+        })
       // Set loading states for buttons to false
       setAddToCartLoading(false)
       setCheckoutLoading(false)
       // Rerender cart
       createCartItems()
+    } else {
+      clearCartAndCheckout()
     }
   }
   const addDiscountToCheckout = async function (discountCode) {
     const currentCheckoutId = fetchFromLocalStorage(lsCheckoutId)
-    if (discountCode) {
+    if (currentCheckoutId && discountCode) {
       // Add a discount code to the checkout
       await client.checkout
         .addDiscount(currentCheckoutId, discountCode)
@@ -1202,23 +1201,28 @@ let upsellVariantId
     const itemsToRemove = [variantId]
     const matchingVariant = recursiveArraySearch(cartItems, variantId)[0]
 
-    await client.checkout
-      .removeLineItems(currentCheckoutId, itemsToRemove)
-      .then(function (checkout) {
-        extractLineItems(checkout.lineItems)
-      })
-      .catch((error) =>
-        console.log("Couldn't remove item from checkout: ", error)
-      )
-    if (matchingVariant && matchingVariant.id === variantId) {
+    if (currentCheckoutId) {
       await client.checkout
-        .removeDiscount(currentCheckoutId)
-        .then((checkout) => {})
+        .removeLineItems(currentCheckoutId, itemsToRemove)
+        .then(function (checkout) {
+          extractLineItems(checkout.lineItems)
+        })
+        .catch((error) => {
+          console.log("Couldn't remove item from checkout: ", error)
+          clearCartAndCheckout()
+        })
+      if (matchingVariant && matchingVariant.id === variantId) {
+        await client.checkout
+          .removeDiscount(currentCheckoutId)
+          .then((checkout) => {})
+      }
+      // Set loading states for buttons to false
+      setCheckoutLoading(false)
+      // Rerender cart
+      createCartItems()
+    } else {
+      clearCartAndCheckout()
     }
-    // Set loading states for buttons to false
-    setCheckoutLoading(false)
-    // Rerender cart
-    createCartItems()
   }
   const updateItems = async function (variantId, qty) {
     // Reset the item count so it will rerender the cart from scratch
@@ -1236,19 +1240,24 @@ let upsellVariantId
         quantity: qty,
       },
     ]
-    await client.checkout
-      .updateLineItems(currentCheckoutId, itemsToUpdate)
-      .then(function (checkout) {
-        extractLineItems(checkout.lineItems)
-      })
-      .catch((error) =>
-        console.log("Couldn't update items in checkout: ", error)
-      )
-    // Set loading states for buttons to false
-    setAddToCartLoading(false)
-    setCheckoutLoading(false)
-    // Rerender cart
-    createCartItems()
+    if (currentCheckoutId) {
+      await client.checkout
+        .updateLineItems(currentCheckoutId, itemsToUpdate)
+        .then(function (checkout) {
+          extractLineItems(checkout.lineItems)
+        })
+        .catch((error) => {
+          console.log("Couldn't update items in checkout: ", error)
+          clearCartAndCheckout()
+        })
+      // Set loading states for buttons to false
+      setAddToCartLoading(false)
+      setCheckoutLoading(false)
+      // Rerender cart
+      createCartItems()
+    } else {
+      clearCartAndCheckout()
+    }
   }
   const checkout = async function () {
     setCheckoutLoading(true)
@@ -1259,6 +1268,12 @@ let upsellVariantId
         location.href = checkout.webUrl
       }
     })
+    setCheckoutLoading(false)
+  }
+  const clearCartAndCheckout = function () {
+    persistToLocalStorage(lsCheckoutId, null)
+    persistToLocalStorage(lsCartId, null)
+    $('#cartLineItems').empty()
     setCheckoutLoading(false)
   }
   const trackFbEvent = function (self, variantId) {
