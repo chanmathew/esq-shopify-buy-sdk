@@ -23,7 +23,7 @@
   <script>
     $(function () {
       $('#product1').plugin({
-        disableCartDrawer: true
+        productHandle: 'companion-lash-glue'
       });
       $('#cartUpsells').pluginUpsell({
         cartUpsell: 'amp-it-up',
@@ -33,6 +33,10 @@
         discountType: "percentage",
         discountAmount: 30
       })
+      $('#product1').pluginOffers({
+        offer: 'AD-FB-GL-SD',
+        freeProduct: 'song-and-dance'
+      });
     });
   </script>
 </body>

@@ -13,6 +13,7 @@ let client
 let clientSettings
 let upsellSettings
 let upsellVariantId
+let offerSettings
 
   // Begin Plugin
 ;(function ($) {
@@ -26,6 +27,7 @@ let upsellVariantId
         defaultOption: '2-Pack',
         defaultCurrency: 'USD',
         defaultRegion: 'en-US',
+        disableCartDrawer: false,
       },
       options
     )
@@ -413,7 +415,7 @@ let upsellVariantId
       // Add to cart handler
       self.find('.addToCart').on('click', function (e) {
         addItems(self)
-        if (!clientSettings.disableCartDrawer) {
+        if (!clientSettings?.disableCartDrawer) {
           toggleCart()
         }
         if (upsellSettings?.upsellOnAddToCart) {
@@ -750,6 +752,31 @@ let upsellVariantId
       })
     }
   }
+  $.fn.pluginOffers = async function (options) {
+    const self = this
+    offerSettings = $.extend(
+      {
+        offer: null,
+        freeProduct: null,
+      },
+      options
+    )
+    if (!client) {
+      console.log('Please initialize Client first.')
+    } else {
+      // Check if offer settings is configured or exists
+      if (offerSettings.offer && offerSettings.freeProduct) {
+        const { offer, freeProduct } = offerSettings
+        await fetchProduct(self, freeProduct, 'freeProduct')
+        const product = self.data('freeProduct')
+        if (product) {
+          offerSettings.variant = product
+        }
+      } else {
+        console.log('No offers configured.')
+      }
+    }
+  }
   /*
       Helper Functions
     */
@@ -965,58 +992,73 @@ let upsellVariantId
       })
     })
   }
-  const fetchProduct = async function (container, productHandle) {
+  const fetchProduct = async function (container, productHandle, key) {
     if (container && productHandle) {
       const self = $(container)
       // Render loading spinner
       self.html(`
-      <div class="productSpinner">
-        <img src="https://cdn.shopify.com/s/files/1/0250/1519/files/spinner.svg?v=1585762796" alt="Loading Checkout" />
-      </div>
-    `)
+        <div class="productSpinner">
+          <img src="https://cdn.shopify.com/s/files/1/0250/1519/files/spinner.svg?v=1585762796" alt="Loading Product" />
+        </div>
+      `)
       // Fetch product by product handle
       await client.product
         .fetchByHandle(productHandle)
         .then((response) => {
-          const product = response
-          // Cache product data to memory
-          self.data('product', product)
-          // If product has unit and color options, save them to data
-          const unitOptions = getOptionValues(product, 'units')
-          const productOptions = product?.options
-            .filter((option) => option.name.toLowerCase() !== 'title')
-            .map((option) => option.name)
-          const colorOptions = getOptionValues(product, 'color')
-          const bundleOptions = getOptionValues(product, 'bundle')
-          const singleVariant = product?.variants?.length === 1
-          // Create a new array that contains the product variants grouped by unit options
-          let optionsAndVariants = []
-          if (unitOptions?.length) {
-            for (let index in unitOptions) {
-              let optionName = unitOptions[index]
-              let variants = recursiveArraySearch(product.variants, optionName)
-              optionsAndVariants.push({
-                name: optionName,
-                variants,
-              })
+          if (!response) {
+            console.log("Couldn't fetch product.")
+          } else {
+            const product = response
+            // Cache product data to memory, optionally specify a key
+            if (key) {
+              self.data(key, product)
+            } else {
+              self.data('product', product)
             }
-          } else if (bundleOptions?.length) {
-            for (let index in bundleOptions) {
-              let optionName = bundleOptions[index]
-              let variants = recursiveArraySearch(product.variants, optionName)
-              optionsAndVariants.push({
-                name: optionName,
-                variants,
-              })
+            // If product has unit and color options, save them to data
+            const unitOptions = getOptionValues(product, 'units')
+            const productOptions = product?.options
+              .filter((option) => option.name.toLowerCase() !== 'title')
+              .map((option) => option.name)
+            const colorOptions = getOptionValues(product, 'color')
+            const bundleOptions = getOptionValues(product, 'bundle')
+            const singleVariant = product?.variants?.length === 1
+            // Create a new array that contains the product variants grouped by unit options
+            let optionsAndVariants = []
+            if (unitOptions?.length) {
+              for (let index in unitOptions) {
+                let optionName = unitOptions[index]
+                let variants = recursiveArraySearch(
+                  product.variants,
+                  optionName
+                )
+                optionsAndVariants.push({
+                  name: optionName,
+                  variants,
+                })
+              }
+            } else if (bundleOptions?.length) {
+              for (let index in bundleOptions) {
+                let optionName = bundleOptions[index]
+                let variants = recursiveArraySearch(
+                  product.variants,
+                  optionName
+                )
+                optionsAndVariants.push({
+                  name: optionName,
+                  variants,
+                })
+              }
             }
+            // Only cache them to data if the options exist
+            singleVariant && self.data('singleVariant', product?.variants[0])
+            productOptions?.length &&
+              self.data('productOptions', productOptions)
+            unitOptions?.length && self.data('unitOptions', unitOptions)
+            colorOptions?.length && self.data('colorOptions', colorOptions)
+            optionsAndVariants?.length &&
+              self.data('optionsAndVariants', optionsAndVariants)
           }
-          // Only cache them to data if the options exist
-          singleVariant && self.data('singleVariant', product?.variants[0])
-          productOptions?.length && self.data('productOptions', productOptions)
-          unitOptions?.length && self.data('unitOptions', unitOptions)
-          colorOptions?.length && self.data('colorOptions', colorOptions)
-          optionsAndVariants?.length &&
-            self.data('optionsAndVariants', optionsAndVariants)
         })
         .catch((error) => console.log("Couldn't fetch product: ", error))
     }
@@ -1082,6 +1124,24 @@ let upsellVariantId
     }
     // Find the current specified quantity to add
     const qty = parseInt(self.find('.qtySelector').val(), 10)
+    // Check if it qualifies for any offers
+    if (offerSettings?.offer && offerSettings?.freeProduct) {
+      console.log('SELF', self.data('freeProduct'))
+      const currentCart = fetchFromLocalStorage(lsCartId)
+      const { offer, freeProduct } = offerSettings
+      if (offer === 'AD-FB-GL-SD' && currentCart) {
+        const match = recursiveArraySearch(currentCart, selectedVariantId)
+        console.log('MATCH', match)
+        if (match.length) {
+          const filteredMatch = recursiveArraySearch(match, '2-pack')
+          console.log(filteredMatch)
+        }
+        // if (match[0].subtitle.toLowerCase() === '2-pack') {
+        //   const variant = offerSettings.variant
+        //   console.log(variant)
+        // }
+      }
+    }
     // Format the line items for passing into checkout api
     const itemsToAdd = [
       {
@@ -1175,6 +1235,41 @@ let upsellVariantId
             .find('.cart-item-price')
             .val(variant.id)[i]
           createPrices(variant, priceContainer)
+          // Check if cart has qualifying offer requirements
+          if (offerSettings?.offer && offerSettings?.freeProduct) {
+            const { offer, freeProduct } = offerSettings
+            if (offer === 'AD-FB-GL-SD') {
+              const match = recursiveArraySearch(
+                cartItems,
+                'Companion Eyelash Glue'
+              )
+              if (match[0].subtitle.toLowerCase() === '2-pack') {
+                const variant = offerSettings.variant
+                console.log(variant)
+                $('#cartLineItems').append(`
+                <div class="cart-item" data-value="${variant.id}">
+                ${
+                  variant?.images[0]?.src
+                    ? `<img src="${variant.images[0].src}" alt="${variant.images[0].altText}"/>`
+                    : `<img src="https://uploads-ssl.webflow.com/5e70f8e5d7461820999a0cf5/5e83a3654bfbfa1aa178d629_placeholder.jpg" alt="${item.title}"/>`
+                }
+                  <div class="cart-item-details">
+                    <p class="cart-item-title">${variant.title}</p>
+                    <p class="cart-item-price cart-item-price-free-gift" data-value=${
+                      variant.id
+                    }></p>
+                    <p class="cart-item-free-gift">Free Gift</p>
+                  </div>
+                </div>
+              `)
+                const priceContainer = $('#cartLineItems')
+                  .find('.cart-item-price-free-gift')
+                  .val(variant.id)
+                console.log(priceContainer)
+                createPrices(variant.variants[0], priceContainer)
+              }
+            }
+          }
           // Increment the item count so we know we rendered all the items and won't fire on subsequent instances
           itemCount++
         })
