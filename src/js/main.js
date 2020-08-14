@@ -434,6 +434,9 @@ let offerSettings
           toggleCart()
           togglefullscreenUpsellModal()
         } else {
+          if (offerSettings?.offer) {
+            await addDiscountToCheckout(offerSettings.offer)
+          }
           await checkout()
         }
       })
@@ -1142,10 +1145,16 @@ let offerSettings
           self.data('product').title.toLowerCase().includes('companion')
         ) {
           const freeProductVariantId = self.data('freeProduct')?.variants[0]?.id
-          itemsToAdd.push({
-            variantId: freeProductVariantId,
-            quantity: 1,
-          })
+          const offerAlreadyAdded = currentCart.some(
+            (item) => item.variant.id === freeProductVariantId
+          )
+          console.log(offerAlreadyAdded)
+          if (!offerAlreadyAdded) {
+            itemsToAdd.push({
+              variantId: freeProductVariantId,
+              quantity: 1,
+            })
+          }
         }
       }
     }
@@ -1272,7 +1281,6 @@ let offerSettings
                 const priceContainer = $('#cartLineItems')
                   .find('.cart-item-free-gift-regular-price')
                   .val(variant.id)
-                console.log(priceContainer)
                 createPrices(variant.variants[0], priceContainer)
               }
             }
@@ -1303,21 +1311,21 @@ let offerSettings
     const itemsToRemove = [variantId]
     const matchingVariant = recursiveArraySearch(cartItems, variantId)[0]
 
-    if (offerSettings?.offer && offerSettings?.freeProduct) {
-      if (
-        matchingVariant.title.toLowerCase().includes('companion') &&
-        matchingVariant.subtitle.includes('2')
-      ) {
-        const freeProductVariantId = $('#cartLineItems')
-          .find('.cart-item-free-gift')
-          .data('value')
-        console.log(freeProductVariantId)
-        itemsToRemove.push(freeProductVariantId)
-        console.log(itemsToRemove)
-      }
-    }
-
     if (currentCheckoutId) {
+      if (offerSettings?.offer && offerSettings?.freeProduct) {
+        if (
+          matchingVariant.title.toLowerCase().includes('companion') &&
+          matchingVariant.subtitle.includes('2')
+        ) {
+          const freeProductVariantId = $('#cartLineItems')
+            .find('.cart-item-free-gift')
+            .data('value')
+          itemsToRemove.push(freeProductVariantId)
+          await client.checkout
+            .removeDiscount(currentCheckoutId)
+            .then((checkout) => {})
+        }
+      }
       await client.checkout
         .removeLineItems(currentCheckoutId, itemsToRemove)
         .then(function (checkout) {
