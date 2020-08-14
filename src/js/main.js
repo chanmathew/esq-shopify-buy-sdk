@@ -1145,10 +1145,9 @@ let offerSettings
           self.data('product').title.toLowerCase().includes('companion')
         ) {
           const freeProductVariantId = self.data('freeProduct')?.variants[0]?.id
-          const offerAlreadyAdded = currentCart.some(
+          const offerAlreadyAdded = currentCart?.some(
             (item) => item.variant.id === freeProductVariantId
           )
-          console.log(offerAlreadyAdded)
           if (!offerAlreadyAdded) {
             itemsToAdd.push({
               variantId: freeProductVariantId,
