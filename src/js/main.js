@@ -921,7 +921,7 @@ let offerSettings
           maximumSignificantDigits: 4, // Trim any zeros after decimal
         }
       )
-      const isUpsellItem = productHandle === upsellSettings.cartUpsell
+      const isUpsellItem = productHandle === upsellSettings?.cartUpsell
       if (isUpsellItem && discountType) {
         const { price, comparePrice } = numericPrices
         const comparePriceFormatted = formattedPrices?.comparePrice
@@ -1123,32 +1123,32 @@ let offerSettings
       }
     }
     // Find the current specified quantity to add
+    let itemsToAdd
     const qty = parseInt(self.find('.qtySelector').val(), 10)
     // Check if it qualifies for any offers
-    if (offerSettings?.offer && offerSettings?.freeProduct) {
-      console.log('SELF', self.data('freeProduct'))
-      const currentCart = fetchFromLocalStorage(lsCartId)
-      const { offer, freeProduct } = offerSettings
-      if (offer === 'AD-FB-GL-SD' && currentCart) {
-        const match = recursiveArraySearch(currentCart, selectedVariantId)
-        console.log('MATCH', match)
-        if (match.length) {
-          const filteredMatch = recursiveArraySearch(match, '2-pack')
-          console.log(filteredMatch)
-        }
-        // if (match[0].subtitle.toLowerCase() === '2-pack') {
-        //   const variant = offerSettings.variant
-        //   console.log(variant)
-        // }
-      }
-    }
+    const currentCart = fetchFromLocalStorage(lsCartId)
     // Format the line items for passing into checkout api
-    const itemsToAdd = [
+    itemsToAdd = [
       {
         variantId: selectedVariantId,
         quantity: qty ? qty : 1, // If there's no qtySelector set default to 1
       },
     ]
+    if (offerSettings?.offer && offerSettings?.freeProduct) {
+      if (selectedOption) {
+        const count = selectedOption.data().value
+        if (
+          count.includes('2') &&
+          self.data('product').title.toLowerCase().includes('companion')
+        ) {
+          const freeProductVariantId = self.data('freeProduct')?.variants[0]?.id
+          itemsToAdd.push({
+            variantId: freeProductVariantId,
+            quantity: 1,
+          })
+        }
+      }
+    }
     // Send event to FB
     trackFbEvent(self, selectedVariantId)
 
@@ -1239,31 +1239,38 @@ let offerSettings
           if (offerSettings?.offer && offerSettings?.freeProduct) {
             const { offer, freeProduct } = offerSettings
             if (offer === 'AD-FB-GL-SD') {
-              const match = recursiveArraySearch(
-                cartItems,
-                'Companion Eyelash Glue'
-              )
-              if (match[0].subtitle.toLowerCase() === '2-pack') {
-                const variant = offerSettings.variant
-                console.log(variant)
-                $('#cartLineItems').append(`
-                <div class="cart-item" data-value="${variant.id}">
-                ${
-                  variant?.images[0]?.src
-                    ? `<img src="${variant.images[0].src}" alt="${variant.images[0].altText}"/>`
-                    : `<img src="https://uploads-ssl.webflow.com/5e70f8e5d7461820999a0cf5/5e83a3654bfbfa1aa178d629_placeholder.jpg" alt="${item.title}"/>`
+              const match = recursiveArraySearch(cartItems, 'song')
+              if (match?.length) {
+                const container = $('#cartLineItems').find(
+                  `.cart-item[data-value="${match[0]?.id}"]`
+                )
+                if (container?.length) {
                 }
-                  <div class="cart-item-details">
-                    <p class="cart-item-title">${variant.title}</p>
-                    <p class="cart-item-price cart-item-price-free-gift" data-value=${
-                      variant.id
-                    }></p>
-                    <p class="cart-item-free-gift">Free Gift</p>
+                const variant = offerSettings.variant
+                const item = recursiveArraySearch(
+                  cartItems,
+                  variant.variants[0].id
+                )
+                $(container).replaceWith(`
+                  <div class="cart-item cart-item-free-gift" data-value="${
+                    item[0].id
+                  }">
+                  ${
+                    variant?.images[0]?.src
+                      ? `<img src="${variant.images[0].src}" alt="${variant.images[0].altText}"/>`
+                      : `<img src="https://uploads-ssl.webflow.com/5e70f8e5d7461820999a0cf5/5e83a3654bfbfa1aa178d629_placeholder.jpg" alt="${variant.images[0].altText}"/>`
+                  }
+                    <div class="cart-item-details">
+                      <p class="cart-item-title">${variant.title}</p>
+                      <p class="cart-item-price cart-item-free-gift-regular-price" data-value=${
+                        item[0].id
+                      }></p>
+                      <p class="cart-item-free-gift-price">Free Gift</p>
+                    </div>
                   </div>
-                </div>
-              `)
+                `)
                 const priceContainer = $('#cartLineItems')
-                  .find('.cart-item-price-free-gift')
+                  .find('.cart-item-free-gift-regular-price')
                   .val(variant.id)
                 console.log(priceContainer)
                 createPrices(variant.variants[0], priceContainer)
@@ -1295,6 +1302,20 @@ let offerSettings
     // Format the line items for passing into checkout api
     const itemsToRemove = [variantId]
     const matchingVariant = recursiveArraySearch(cartItems, variantId)[0]
+
+    if (offerSettings?.offer && offerSettings?.freeProduct) {
+      if (
+        matchingVariant.title.toLowerCase().includes('companion') &&
+        matchingVariant.subtitle.includes('2')
+      ) {
+        const freeProductVariantId = $('#cartLineItems')
+          .find('.cart-item-free-gift')
+          .data('value')
+        console.log(freeProductVariantId)
+        itemsToRemove.push(freeProductVariantId)
+        console.log(itemsToRemove)
+      }
+    }
 
     if (currentCheckoutId) {
       await client.checkout

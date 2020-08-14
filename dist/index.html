@@ -1,4 +1,4 @@
-<!-- [© ESQIDO LTD. Author: Mathew Chan.]  Build version: 0.5.0 - Sunday, July 12th, 2020, 6:43:54 PM  --> 
+<!-- [© ESQIDO LTD. Author: Mathew Chan.]  Build version: 0.5.0 - Thursday, August 13th, 2020, 10:58:22 PM  --> 
  <!DOCTYPE html>
 <html lang="en">
 
@@ -24,16 +24,12 @@
   <script>
     $(function () {
       $('#product1').plugin({
-        disableCartDrawer: true
+        productHandle: 'companion-lash-glue'
       });
-      $('#cartUpsells').pluginUpsell({
-        cartUpsell: 'amp-it-up',
-        heading: 'Limited time offer! 30% off this popular lash styles with glue purchase!',
-        headingColor: 'red',
-        discountCode: 'AD-UPS-PL-30',
-        discountType: "percentage",
-        discountAmount: 30
-      })
+      $('#product1').pluginOffers({
+        offer: 'AD-FB-GL-SD',
+        freeProduct: 'song-and-dance'
+      });
     });
   </script>
 <script type="text/javascript" src="app.bundle.min.js"></script></body>
