@@ -439,6 +439,7 @@ let offerSettings
           }
           await checkout()
         }
+        snaptrTrackEventCheckout()
       })
       // Set selected text for Liner
       self.on('click', '.unit-option, .variant-option', function (e) {
@@ -1145,7 +1146,7 @@ let offerSettings
           self.data('product').title.toLowerCase().includes('companion')
         ) {
           const freeProductVariantId = self.data('freeProduct')?.variants[0]?.id
-          const offerAlreadyAdded = currentCart?.some(
+          const offerAlreadyAdded = currentCart?.some(   
             (item) => item.variant.id === freeProductVariantId
           )
           if (!offerAlreadyAdded) {
@@ -1159,6 +1160,7 @@ let offerSettings
     }
     // Send event to FB
     trackFbEvent(self, selectedVariantId)
+    snaptrTrackEvent(selectedVariantId);
 
     if (currentCheckoutId) {
       await client.checkout
@@ -1281,6 +1283,7 @@ let offerSettings
                   .find('.cart-item-free-gift-regular-price')
                   .val(variant.id)
                 createPrices(variant.variants[0], priceContainer)
+                
               }
             }
           }
@@ -1422,5 +1425,13 @@ let offerSettings
         num_items: qty ? qty : 1,
       })
     }
+  }
+  const snaptrTrackEvent = function(selectedVariantId){
+
+    snaptr('track', 'ADD_CART');
+  }
+  const snaptrTrackEventCheckout = function(){
+    snaptr('track','PURCHASE');
+
   }
 })(jQuery)
