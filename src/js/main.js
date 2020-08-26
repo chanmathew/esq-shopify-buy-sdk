@@ -1160,7 +1160,7 @@ let offerSettings
     }
     // Send event to FB
     trackFbEvent(self, selectedVariantId)
-    snaptrTrackEvent(selectedVariantId);
+    snaptrTrackEventAddCart(selectedVariantId);
 
     if (currentCheckoutId) {
       await client.checkout
@@ -1426,12 +1426,12 @@ let offerSettings
       })
     }
   }
-  const snaptrTrackEvent = function(selectedVariantId){
-
-    snaptr('track', 'ADD_CART');
+  const snaptrTrackEventAddCart = function(selectedVariantId){
+    
+    snaptr('track', 'ADD_CART',{ 'item_ids': selectedVariantId});
   }
   const snaptrTrackEventCheckout = function(){
-    snaptr('track','PURCHASE');
+    snaptr('track','START_CHECKOUT');
 
   }
 })(jQuery)
