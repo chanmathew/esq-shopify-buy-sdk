@@ -8,6 +8,25 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
   <script src="https://sdks.shopifycdn.com/js-buy-sdk/v2/latest/index.umd.min.js"></script>
   <script type="text/javascript" src="js/slick.js"></script>
+  <!-- Snap Pixel Code -->
+<script type='text/javascript'>
+(function(e,t,n){if(e.snaptr)return;var a=e.snaptr=function()
+{a.handleRequest?a.handleRequest.apply(a,arguments):a.queue.push(arguments)};
+a.queue=[];var s='script';r=t.createElement(s);r.async=!0;
+r.src=n;var u=t.getElementsByTagName(s)[0];
+u.parentNode.insertBefore(r,u);})(window,document,
+'https://sc-static.net/scevent.min.js');
+
+// snaptr('init', '2f36a32d-1e7c-4690-aa87-9d93d5d95ff1');
+  snaptr('init','2f36a32d-1e7c-4690-aa87-9d93d5d95ff1',{
+  'user_email':'Guest User'
+})
+snaptr('track', 'PAGE_VIEW');
+
+</script>
+<!-- End Snap Pixel Code -->
+
+
 </head>
 
 <body>
@@ -17,6 +36,7 @@
     <div id="cartUpsells"></div>
   </div>
   <button id="openCart">Open Cart</button>
+      
   <span id="cartCount"></span>
   <div id="product1" class="product"></div>
   <div id="upsell1" class="product"></div>
