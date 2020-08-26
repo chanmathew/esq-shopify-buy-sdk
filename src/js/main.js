@@ -1146,7 +1146,7 @@ let offerSettings
           self.data('product').title.toLowerCase().includes('companion')
         ) {
           const freeProductVariantId = self.data('freeProduct')?.variants[0]?.id
-          const offerAlreadyAdded = currentCart?.some(   
+          const offerAlreadyAdded = currentCart?.some(
             (item) => item.variant.id === freeProductVariantId
           )
           if (!offerAlreadyAdded) {
@@ -1160,7 +1160,7 @@ let offerSettings
     }
     // Send event to FB
     trackFbEvent(self, selectedVariantId)
-    snaptrTrackEventAddCart(selectedVariantId);
+    snaptrTrackEventAddCart(selectedVariantId)
 
     if (currentCheckoutId) {
       await client.checkout
@@ -1283,7 +1283,6 @@ let offerSettings
                   .find('.cart-item-free-gift-regular-price')
                   .val(variant.id)
                 createPrices(variant.variants[0], priceContainer)
-                
               }
             }
           }
@@ -1426,12 +1425,10 @@ let offerSettings
       })
     }
   }
-  const snaptrTrackEventAddCart = function(selectedVariantId){
-    
-    snaptr('track', 'ADD_CART',{ 'item_ids': selectedVariantId});
+  const snaptrTrackEventAddCart = function (selectedVariantId) {
+    snaptr('track', 'ADD_CART', { item_ids: selectedVariantId })
   }
-  const snaptrTrackEventCheckout = function(){
-    snaptr('track','START_CHECKOUT');
-
+  const snaptrTrackEventCheckout = function () {
+    snaptr('track', 'START_CHECKOUT')
   }
 })(jQuery)
