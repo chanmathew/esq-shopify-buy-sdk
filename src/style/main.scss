@@ -1,8 +1,8 @@
-@import "slick.scss";
-@import "slick-theme.scss";
+@import 'slick.scss';
+@import 'slick-theme.scss';
 
 .product {
-  font-family: "Mont", sans-serif;
+  font-family: 'Mont', sans-serif;
   max-width: 320px;
 }
 .productSpinner {
@@ -83,20 +83,26 @@
   color: transparent;
   border-radius: 4px;
 }
-.variant-option[data-value="black"] {
+.variant-option[data-value='black'] {
   background-color: black;
 }
-.variant-option[data-value="brown"] {
+.variant-option[data-value='brown'] {
   background-color: #523737;
 }
-.variant-option[data-value="navy"] {
-  background-color: #091d42;
+.variant-option[data-value='navy'] {
+  background-color: #03374f;
 }
-.variant-option[data-value="gray"] {
-  background-color: #8a8a8a;
+.variant-option[data-value='gray'] {
+  background-color: #7c7c7c;
 }
-.variant-option[data-value="black-brown"] {
+.variant-option[data-value='black-brown'] {
   background-image: url(https://uploads-ssl.webflow.com/5e70f8e5d7461820999a0cf5/5e719aadd37a816e1a63b421_black-brown.png);
+  background-position: 0 0;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+.variant-option[data-value='navy-gray'] {
+  background-image: url('https://uploads-ssl.webflow.com/5e70f8e5d7461820999a0cf5/5f78eba0a1f1a01d913c47ad_navy-gray.png');
   background-position: 0 0;
   background-size: contain;
   background-repeat: no-repeat;
@@ -130,12 +136,12 @@
 .quantity {
   position: relative;
 }
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-input[type="number"] {
+input[type='number'] {
   -moz-appearance: textfield;
 }
 .quantity {
@@ -189,14 +195,14 @@ input[type="number"] {
   width: 100%;
 }
 .btn {
-  font-family: "Mont", sans-serif;
+  font-family: 'Mont', sans-serif;
   display: flex;
   justify-content: center;
   align-items: center;
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-  background: #BE9503;
+  background: #be9503;
   padding: 0 1.2rem;
   height: 45px;
   font-size: 16px;
@@ -213,7 +219,8 @@ input[type="number"] {
 .btn:disabled {
   opacity: 0.5;
 }
-#overlay, #modalOverlay {
+#overlay,
+#modalOverlay {
   visibility: hidden;
   position: fixed;
   top: 0;
@@ -227,7 +234,7 @@ input[type="number"] {
   height: 100%;
 }
 #cart {
-  font-family: "Mont", sans-serif;
+  font-family: 'Mont', sans-serif;
   visibility: hidden;
   background: white;
   opacity: 0;
@@ -244,7 +251,8 @@ input[type="number"] {
   flex-direction: column;
   justify-content: space-between;
 }
-#cartWrapper, #cartUpsells {
+#cartWrapper,
+#cartUpsells {
   padding: 1.6rem;
 }
 .cartUpsellTitle {
@@ -286,7 +294,8 @@ body.cartOpen #cart {
 #cartHeader h3 {
   margin: 0;
 }
-#closeCart, #closeModal {
+#closeCart,
+#closeModal {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -364,7 +373,7 @@ body.cartOpen #cart {
     height: auto;
     margin-right: 1rem;
   }
-  
+
   .addToCart {
     font-size: 0.8rem;
     height: 35px;
@@ -434,7 +443,6 @@ body.cartOpen #cart {
       margin-right: 0.4rem;
     }
   }
-
 }
 .upsellModal {
   display: none;
@@ -455,7 +463,7 @@ body.cartOpen #cart {
   .upsellItemGalleryContainer {
     margin-right: 1rem;
     max-width: 50%;
-    font-family: "slick";
+    font-family: 'slick';
   }
   .upsellItemDetails {
     flex: 1;

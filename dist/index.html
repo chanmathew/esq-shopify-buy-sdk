@@ -1,39 +1,62 @@
-<!-- [© ESQIDO LTD. Author: Mathew Chan.]  Build version: 0.5.5 - Wednesday, August 26th, 2020, 11:48:24 AM  --> 
+<!-- [© ESQIDO LTD. Author: Mathew Chan.]  Build version: 0.5.6 - Saturday, October 3rd, 2020, 6:46:07 PM  --> 
  <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Esqido Product</title>
+    <!-- Snap Pixel Code -->
+    <script type="text/javascript">
+      ;(function (e, t, n) {
+        if (e.snaptr) return
+        var a = (e.snaptr = function () {
+          a.handleRequest
+            ? a.handleRequest.apply(a, arguments)
+            : a.queue.push(arguments)
+        })
+        a.queue = []
+        var s = 'script'
+        r = t.createElement(s)
+        r.async = !0
+        r.src = n
+        var u = t.getElementsByTagName(s)[0]
+        u.parentNode.insertBefore(r, u)
+      })(window, document, 'https://sc-static.net/scevent.min.js')
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Esqido Product</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-  <script src="https://sdks.shopifycdn.com/js-buy-sdk/v2/latest/index.umd.min.js"></script>
-  <script type="text/javascript" src="js/slick.js"></script>
-<link href="main.min.css" rel="stylesheet"></head>
+      snaptr('init', 'TEST')
 
-<body>
-  <div id="overlay"></div>
-  <div id="cart">
-    <div id="cartWrapper"></div>
-    <div id="cartUpsells"></div>
-  </div>
-  <button id="openCart">Open Cart</button>
-      
-  <span id="cartCount"></span>
-  <div id="product1" class="product"></div>
-  <div id="upsell1" class="product"></div>
-  <script>
-    $(function () {
-      $('#product1').plugin({
-        productHandle: 'companion-lash-glue-1'
-      });
-      $('#product1').pluginOffers({
-        offer: 'AD-FB-GL-SD',
-        freeProduct: 'song-and-dance'
-      });
-    });
-  </script>
-<script type="text/javascript" src="app.bundle.min.js"></script></body>
+      snaptr('track', 'PAGE_VIEW')
+    </script>
+    <!-- End Snap Pixel Code -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://sdks.shopifycdn.com/js-buy-sdk/v2/latest/index.umd.min.js"></script>
+    <script type="text/javascript" src="js/slick.js"></script>
+  <link href="main.min.css" rel="stylesheet"></head>
 
+  <body>
+    <div id="overlay"></div>
+    <div id="cart">
+      <div id="cartWrapper"></div>
+      <div id="cartUpsells"></div>
+    </div>
+    <button id="openCart">Open Cart</button>
+
+    <span id="cartCount"></span>
+    <div id="product1" class="product"></div>
+    <div id="upsell1" class="product"></div>
+    <script>
+      $(function () {
+        $('#product1').plugin({
+          productHandle: 'trick-and-treat',
+        })
+        $('#product1').pluginOffers({
+          offer: 'AD-FB-UL-GL',
+          offerType: 'free-product',
+          offerThreshold: 2,
+          freeProduct: 'companion-lash-glue',
+        })
+      })
+    </script>
+  <script type="text/javascript" src="app.bundle.min.js"></script></body>
 </html>
  

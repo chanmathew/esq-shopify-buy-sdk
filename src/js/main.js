@@ -761,6 +761,8 @@ let offerSettings
     offerSettings = $.extend(
       {
         offer: null,
+        offerType: null,
+        offerThreshold: null,
         freeProduct: null,
       },
       options
@@ -1138,13 +1140,15 @@ let offerSettings
         quantity: qty ? qty : 1, // If there's no qtySelector set default to 1
       },
     ]
-    if (offerSettings?.offer && offerSettings?.freeProduct) {
+    if (
+      offerSettings?.offer &&
+      offerSettings?.freeProduct &&
+      offerSettings?.offerThreshold
+    ) {
+      const { freeProduct } = offerSettings
       if (selectedOption) {
         const count = selectedOption.data().value
-        if (
-          count.includes('2') &&
-          self.data('product').title.toLowerCase().includes('companion')
-        ) {
+        if (count.includes(offerSettings.offerThreshold.toString())) {
           const freeProductVariantId = self.data('freeProduct')?.variants[0]?.id
           const offerAlreadyAdded = currentCart?.some(
             (item) => item.variant.id === freeProductVariantId
@@ -1247,33 +1251,28 @@ let offerSettings
           createPrices(variant, priceContainer)
           // Check if cart has qualifying offer requirements
           if (offerSettings?.offer && offerSettings?.freeProduct) {
-            const { offer, freeProduct } = offerSettings
-            if (offer === 'AD-FB-GL-SD') {
-              const match = recursiveArraySearch(cartItems, 'song')
-              if (match?.length) {
+            const { offer, offerType, freeProduct } = offerSettings
+            if (freeProduct) {
+              const match = recursiveArraySearch(cartItems, freeProduct)[0]
+              if (match) {
                 const container = $('#cartLineItems').find(
-                  `.cart-item[data-value="${match[0]?.id}"]`
+                  `.cart-item[data-value="${match?.id}"]`
                 )
-                if (container?.length) {
-                }
-                const variant = offerSettings.variant
-                const item = recursiveArraySearch(
-                  cartItems,
-                  variant.variants[0].id
-                )
+                const variant = match.variant
+
                 $(container).replaceWith(`
                   <div class="cart-item cart-item-free-gift" data-value="${
-                    item[0].id
+                    match.id
                   }">
                   ${
-                    variant?.images[0]?.src
-                      ? `<img src="${variant.images[0].src}" alt="${variant.images[0].altText}"/>`
-                      : `<img src="https://uploads-ssl.webflow.com/5e70f8e5d7461820999a0cf5/5e83a3654bfbfa1aa178d629_placeholder.jpg" alt="${variant.images[0].altText}"/>`
+                    variant?.image
+                      ? `<img src="${variant.image?.src}" alt="${variant.image?.altText}"/>`
+                      : `<img src="https://uploads-ssl.webflow.com/5e70f8e5d7461820999a0cf5/5e83a3654bfbfa1aa178d629_placeholder.jpg" alt="${variant.image?.altText}"/>`
                   }
                     <div class="cart-item-details">
-                      <p class="cart-item-title">${variant.title}</p>
+                      <p class="cart-item-title">${match.title}</p>
                       <p class="cart-item-price cart-item-free-gift-regular-price" data-value=${
-                        item[0].id
+                        match.id
                       }></p>
                       <p class="cart-item-free-gift-price">Free Gift</p>
                     </div>
@@ -1282,7 +1281,7 @@ let offerSettings
                 const priceContainer = $('#cartLineItems')
                   .find('.cart-item-free-gift-regular-price')
                   .val(variant.id)
-                createPrices(variant.variants[0], priceContainer)
+                createPrices(variant, priceContainer)
               }
             }
           }
@@ -1311,20 +1310,22 @@ let offerSettings
     // Format the line items for passing into checkout api
     const itemsToRemove = [variantId]
     const matchingVariant = recursiveArraySearch(cartItems, variantId)[0]
-
     if (currentCheckoutId) {
-      if (offerSettings?.offer && offerSettings?.freeProduct) {
+      if (
+        offerSettings?.offer &&
+        offerSettings?.freeProduct &&
+        offerSettings?.offerThreshold
+      ) {
         if (
-          matchingVariant.title.toLowerCase().includes('companion') &&
-          matchingVariant.subtitle.includes('2')
+          matchingVariant.subtitle.includes(
+            offerSettings.offerThreshold.toString()
+          )
         ) {
           const freeProductVariantId = $('#cartLineItems')
             .find('.cart-item-free-gift')
             .data('value')
+
           itemsToRemove.push(freeProductVariantId)
-          await client.checkout
-            .removeDiscount(currentCheckoutId)
-            .then((checkout) => {})
         }
       }
       await client.checkout
