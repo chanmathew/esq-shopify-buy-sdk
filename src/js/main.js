@@ -176,8 +176,9 @@ let offerSettings
     const setDefaultOption = function () {
       const singleVariant = self.data('singleVariant')
       const product = self.data('product')
+      console.log(singleVariant)
       // Check if it's a single variant product, if it's sold out, disable the ATC button
-      if (singleVariant && !product.available) {
+      if (singleVariant && !singleVariant.available) {
         self.find('.addToCart').text('Sold Out').attr('disabled', true)
       }
       // Check if the product has options
@@ -1177,7 +1178,7 @@ let offerSettings
         })
         .catch((error) => {
           console.log("Couldn't add item to checkout: ", error)
-          clearCartAndCheckout()
+          clearCartIdAndCheckoutId()
         })
       // Set loading states for buttons to false
       setAddToCartLoading(false)
@@ -1185,7 +1186,7 @@ let offerSettings
       // Rerender cart
       createCartItems()
     } else {
-      clearCartAndCheckout()
+      clearCartIdAndCheckoutId()
     }
   }
   const addDiscountToCheckout = async function (discountCode) {
@@ -1335,7 +1336,7 @@ let offerSettings
         })
         .catch((error) => {
           console.log("Couldn't remove item from checkout: ", error)
-          clearCartAndCheckout()
+          clearCartIdAndCheckoutId()
         })
       if (matchingVariant && matchingVariant.id === variantId) {
         await client.checkout
@@ -1347,7 +1348,7 @@ let offerSettings
       // Rerender cart
       createCartItems()
     } else {
-      clearCartAndCheckout()
+      clearCartIdAndCheckoutId()
     }
   }
   const updateItems = async function (variantId, qty) {
@@ -1374,7 +1375,7 @@ let offerSettings
         })
         .catch((error) => {
           console.log("Couldn't update items in checkout: ", error)
-          clearCartAndCheckout()
+          clearCartIdAndCheckoutId()
         })
       // Set loading states for buttons to false
       setAddToCartLoading(false)
@@ -1382,7 +1383,7 @@ let offerSettings
       // Rerender cart
       createCartItems()
     } else {
-      clearCartAndCheckout()
+      clearCartIdAndCheckoutId()
     }
   }
   const checkout = async function () {
@@ -1396,7 +1397,7 @@ let offerSettings
     })
     setCheckoutLoading(false)
   }
-  const clearCartAndCheckout = function () {
+  const clearCartIdAndCheckoutId = function () {
     persistToLocalStorage(lsCheckoutId, null)
     persistToLocalStorage(lsCartId, null)
     $('#cartLineItems').empty()
