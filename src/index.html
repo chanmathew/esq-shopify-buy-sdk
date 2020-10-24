@@ -42,11 +42,17 @@
 
     <span id="cartCount"></span>
     <div id="product1" class="product"></div>
+    <div id="product2" class="product"></div>
     <div id="upsell1" class="product"></div>
     <script>
       $(function () {
         $('#product1').plugin({
-          productHandle: 'liner-4-bundle',
+          productHandle: 'gel-liner-pencil',
+        })
+        $('#product1').pluginOffers({
+          offer: 'AD-FB-GL-SD',
+          offerThreshold: 2,
+          freeProduct: 'silhouette',
         })
       })
     </script>
