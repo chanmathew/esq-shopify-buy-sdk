@@ -176,7 +176,6 @@ let offerSettings
     const setDefaultOption = function () {
       const singleVariant = self.data('singleVariant')
       const product = self.data('product')
-      console.log(singleVariant)
       // Check if it's a single variant product, if it's sold out, disable the ATC button
       if (singleVariant && !singleVariant.available) {
         self.find('.addToCart').text('Sold Out').attr('disabled', true)
