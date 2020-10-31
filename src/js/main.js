@@ -57,6 +57,7 @@ let offerSettings
     const createContainer = function () {
       $('.productSpinner').hide()
       // If the product has options (not a single variant which only has an option of "Title")
+      console.log('Self data', self.data())
       const productOptions = self.data('productOptions')
       if (productOptions) {
         self.append(`
@@ -493,7 +494,7 @@ let offerSettings
       //   }
       // }
       if (upsellSettings.cartUpsell) {
-        await fetchProduct(self, upsellSettings.cartUpsell)
+        await fetchProduct(self, upsellSettings.cartUpsell, 'productUpsell')
         const product = self.data('product')
         if (product) {
           const optionsAndVariants = self.data('optionsAndVariants')
@@ -772,11 +773,13 @@ let offerSettings
     } else {
       // Check if offer settings is configured or exists
       if (offerSettings.offer && offerSettings.freeProduct) {
+        const mainProductLoaded = self.data().product
+        console.log('Main product loaded', mainProductLoaded)
         const { offer, freeProduct } = offerSettings
         await fetchProduct(self, freeProduct, 'freeProduct')
-        const product = self.data('freeProduct')
-        if (product) {
-          offerSettings.variant = product
+        const freeProd = self.data('freeProduct')
+        if (freeProd) {
+          offerSettings.variant = freeProd
         }
       } else {
         console.log('No offers configured.')
@@ -1016,6 +1019,7 @@ let offerSettings
           } else {
             const product = response
             // Cache product data to memory, optionally specify a key
+            console.log('Key, product', key, product)
             if (key) {
               self.data(key, product)
             } else {
@@ -1056,14 +1060,16 @@ let offerSettings
                 })
               }
             }
-            // Only cache them to data if the options exist
-            singleVariant && self.data('singleVariant', product?.variants[0])
-            productOptions?.length &&
-              self.data('productOptions', productOptions)
-            unitOptions?.length && self.data('unitOptions', unitOptions)
-            colorOptions?.length && self.data('colorOptions', colorOptions)
-            optionsAndVariants?.length &&
-              self.data('optionsAndVariants', optionsAndVariants)
+            if (!key) {
+              // Only cache them to data if it's the main product and options exist
+              singleVariant && self.data('singleVariant', product?.variants[0])
+              productOptions?.length &&
+                self.data('productOptions', productOptions)
+              unitOptions?.length && self.data('unitOptions', unitOptions)
+              colorOptions?.length && self.data('colorOptions', colorOptions)
+              optionsAndVariants?.length &&
+                self.data('optionsAndVariants', optionsAndVariants)
+            }
           }
         })
         .catch((error) => console.log("Couldn't fetch product: ", error))
