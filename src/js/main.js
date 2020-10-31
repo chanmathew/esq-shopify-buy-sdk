@@ -1168,7 +1168,6 @@ let offerSettings
         }
       }
     }
-    console.log('Items to add', itemsToAdd)
     // Send event to FB
     trackFbEvent(self, selectedVariantId)
     snaptrTrackEventAddCart(selectedVariantId)
