@@ -1150,7 +1150,6 @@ let offerSettings
       const offerAlreadyAdded = currentCart?.some(
         (item) => item.variant.id === freeProductVariantId
       )
-      console.log('Selected Option', selectedOption)
       if (singleVariant && !offerAlreadyAdded) {
         itemsToAdd.push({
           variantId: freeProductVariantId,
