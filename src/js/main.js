@@ -424,7 +424,7 @@ let offerSettings
       })
       // Handle removing line items in cart
       $('body').on('click', '.cart-item-remove', function (e) {
-        removeItems(e.target.dataset.value)
+        removeItems(self, e.target.dataset.value)
       })
       // Checkout handler
       $('body').on('click', '#checkout', async function (e) {
@@ -1146,19 +1146,26 @@ let offerSettings
       offerSettings?.offerThreshold
     ) {
       const { freeProduct } = offerSettings
-      if (selectedOption) {
+      const freeProductVariantId = self.data('freeProduct')?.variants[0]?.id
+      const offerAlreadyAdded = currentCart?.some(
+        (item) => item.variant.id === freeProductVariantId
+      )
+      console.log('Selected Option', selectedOption)
+      if (singleVariant && !offerAlreadyAdded) {
+        itemsToAdd.push({
+          variantId: freeProductVariantId,
+          quantity: 1,
+        })
+      } else if (selectedOption) {
         const count = selectedOption.data().value
-        if (count.includes(offerSettings.offerThreshold.toString())) {
-          const freeProductVariantId = self.data('freeProduct')?.variants[0]?.id
-          const offerAlreadyAdded = currentCart?.some(
-            (item) => item.variant.id === freeProductVariantId
-          )
-          if (!offerAlreadyAdded) {
-            itemsToAdd.push({
-              variantId: freeProductVariantId,
-              quantity: 1,
-            })
-          }
+        if (
+          count.includes(offerSettings.offerThreshold.toString()) &&
+          !offerAlreadyAdded
+        ) {
+          itemsToAdd.push({
+            variantId: freeProductVariantId,
+            quantity: 1,
+          })
         }
       }
     }
@@ -1299,7 +1306,7 @@ let offerSettings
       $('#cartCount').text(0)
     }
   }
-  const removeItems = async function (variantId) {
+  const removeItems = async function (self, variantId) {
     // Reset the item count so it will rerender the cart from scratch
     itemCount = 0
     // Set loading states for buttons
@@ -1310,6 +1317,7 @@ let offerSettings
     // Format the line items for passing into checkout api
     const itemsToRemove = [variantId]
     const matchingVariant = recursiveArraySearch(cartItems, variantId)[0]
+    const singleVariant = self.data('singleVariant')
     if (currentCheckoutId) {
       if (
         offerSettings?.offer &&
@@ -1317,6 +1325,7 @@ let offerSettings
         offerSettings?.offerThreshold
       ) {
         if (
+          singleVariant ||
           matchingVariant.subtitle.includes(
             offerSettings.offerThreshold.toString()
           )
