@@ -57,7 +57,6 @@ let offerSettings
     const createContainer = function () {
       $('.productSpinner').hide()
       // If the product has options (not a single variant which only has an option of "Title")
-      console.log('Self data', self.data())
       const productOptions = self.data('productOptions')
       if (productOptions) {
         self.append(`
@@ -1019,7 +1018,6 @@ let offerSettings
           } else {
             const product = response
             // Cache product data to memory, optionally specify a key
-            console.log('Key, product', key, product)
             if (key) {
               self.data(key, product)
             } else {
@@ -1351,7 +1349,11 @@ let offerSettings
           console.log("Couldn't remove item from checkout: ", error)
           clearCartIdAndCheckoutId()
         })
-      if (matchingVariant && matchingVariant.id === variantId) {
+      if (
+        clientSettings.discountCode &&
+        matchingVariant &&
+        matchingVariant.id === variantId
+      ) {
         await client.checkout
           .removeDiscount(currentCheckoutId)
           .then((checkout) => {})
