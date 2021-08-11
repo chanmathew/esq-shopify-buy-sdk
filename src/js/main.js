@@ -708,7 +708,7 @@ let offerSettings
           : self.data('product').variants[0].id
         addUpsellItem(productVariant)
         // Add event to FB
-        trackFbEvent(self, productVariant)
+        trackAtcEvent(self, productVariant)
         if (upsellSettings?.discountCode) {
           addDiscountToCheckout(upsellSettings.discountCode)
         }
@@ -724,7 +724,7 @@ let offerSettings
           : self.data('product').variants[0].id
         addUpsellItem(productVariant)
         // Add event to FB
-        trackFbEvent(self, productVariant)
+        trackAtcEvent(self, productVariant)
         if (upsellSettings?.discountCode) {
           addDiscountToCheckout(upsellSettings.discountCode)
         }
@@ -1173,7 +1173,7 @@ let offerSettings
       }
     }
     // Send event to FB
-    trackFbEvent(self, selectedVariantId)
+    trackAtcEvent(self, selectedVariantId)
     snaptrTrackEventAddCart(selectedVariantId)
 
     if (currentCheckoutId) {
@@ -1418,7 +1418,7 @@ let offerSettings
     $('#cartLineItems').empty()
     setCheckoutLoading(false)
   }
-  const trackFbEvent = function (self, variantId) {
+  const trackAtcEvent = function (self, variantId) {
     // Add Facebook Tracking
     const productTitle = self.data('product')?.title
     const productVariant = recursiveArraySearch(
@@ -1439,6 +1439,14 @@ let offerSettings
         content_category: productVariant.title,
         content_name: productVariant.title,
         num_items: qty ? qty : 1,
+      })
+    }
+    // Add Google Tracking
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'conversion', {
+        send_to: 'AW-977619698/D1x7CI3K3I0CEPKVldID',
+        value: parseInt(productVariant.priceV2.amount, 10),
+        currency: 'USD',
       })
     }
   }
