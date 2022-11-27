@@ -1,10 +1,10 @@
 const cssnano = require('cssnano')
-const merge = require('webpack-merge')
+const { merge } = require('webpack-merge')
 
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
-const WebpackAutoInject = require('webpack-auto-inject-version')
+const WebpackAutoInject = require('webpack-auto-inject-version-next')
 
 const common = require('./webpack.config.common.js')
 

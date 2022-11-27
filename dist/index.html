@@ -1,13 +1,4 @@
-<!-- [© ESQIDO LTD. Author: Mathew Chan.]  Build version: 0.7.10 - Wednesday, August 11th, 2021, 12:14:57 PM  --> 
- <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Esqido Product</title>
-    <!-- Snap Pixel Code -->
-    <script type="text/javascript">
-      ;(function (e, t, n) {
+<!doctype html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Esqido Product</title><script>;(function (e, t, n) {
         if (e.snaptr) return
         var a = (e.snaptr = function () {
           a.handleRequest
@@ -25,38 +16,13 @@
 
       snaptr('init', 'TEST')
 
-      snaptr('track', 'PAGE_VIEW')
-    </script>
-    <!-- End Snap Pixel Code -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-    <script src="https://sdks.shopifycdn.com/js-buy-sdk/v2/latest/index.umd.min.js"></script>
-    <script type="text/javascript" src="js/slick.js"></script>
-  <link href="main.min.css" rel="stylesheet"></head>
-
-  <body>
-    <div id="overlay"></div>
-    <div id="cart">
-      <div id="cartWrapper"></div>
-      <div id="cartUpsells"></div>
-    </div>
-    <button id="openCart">Open Cart</button>
-
-    <span id="cartCount"></span>
-    <div id="product1" class="product"></div>
-    <div id="product2" class="product"></div>
-    <div id="upsell1" class="product"></div>
-    <script>
-      $(function () {
+      snaptr('track', 'PAGE_VIEW')</script><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script><script src="https://sdks.shopifycdn.com/js-buy-sdk/v2/latest/index.umd.min.js"></script><script src="js/slick.js"></script><script defer="defer" src="app.bundle.min.js"></script><link href="main.min.css" rel="stylesheet"></head><body><div id="overlay"></div><div id="cart"><div id="cartWrapper"></div><div id="cartUpsells"></div></div><button id="openCart">Open Cart</button> <span id="cartCount"></span><div id="product1" class="product"></div><div id="product2" class="product"></div><div id="upsell1" class="product"></div><script>$(function () {
         $('#product1').plugin({
-          productHandle: 'liner-4-bundle',
+          productHandle: 'companion-lash-glue-1',
         })
-        $('#product1').pluginOffers({
-          offer: 'AD-FB-4LIG-SIL',
-          offerThreshold: 1,
-          freeProduct: 'silhouette',
-        })
-      })
-    </script>
-  <script type="text/javascript" src="app.bundle.min.js"></script></body>
-</html>
- 
+        // $('#product1').pluginOffers({
+        //   offer: 'AD-FB-4LIG-SIL',
+        //   offerThreshold: 1,
+        //   freeProduct: 'silhouette',
+        // })
+      })</script></body></html>

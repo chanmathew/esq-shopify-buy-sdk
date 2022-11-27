@@ -23,8 +23,8 @@ let offerSettings
       {
         domain: 'esqido.com',
         storefrontAccessToken: '05f86644045cc5fc6cc10718814e3f31',
-        productHandle: 'gel-pencil-eyeliners',
-        defaultOption: '2-Pack',
+        productHandle: 'companion-lash-glue-1',
+        defaultOption: '3 Bottles',
         defaultCurrency: 'USD',
         defaultRegion: 'en-US',
         disableCartDrawer: false,
@@ -863,54 +863,52 @@ let offerSettings
     $('body').toggleClass('cartOpen')
   }
   const formatPrices = function (variant, formatToCurrency = true) {
-    let variantPrices = null
-    if (variant && variant?.presentmentPrices?.length) {
-      const results = variant.presentmentPrices.filter(
-        (item) => item.price.currencyCode === clientSettings.defaultCurrency
-      )
-      if (results?.length) {
-        variantPrices = results[0]
+    // let variantPrices = null
+    // if (variant && variant?.presentmentPrices?.length) {
+    //   const results = variant.presentmentPrices.filter(
+    //     (item) => item.price.currencyCode === clientSettings.defaultCurrency
+    //   )
+    //   if (results?.length) {
+    //     variantPrices = results[0]
+    //   }
+    // }
+    // if (variantPrices) {
+    const { price, compareAtPrice } = variant
+    let formattedPrice
+    let formattedComparePrice
+    // Formats prices currency format, supports multi-currency
+    const priceFormatter = new Intl.NumberFormat(clientSettings.defaultRegion, {
+      style: 'currency',
+      currency: clientSettings.defaultCurrency,
+      maximumSignificantDigits: 4, // Trim any zeros after decimal
+    })
+    if (formatToCurrency) {
+      if (price?.amount) {
+        formattedPrice = priceFormatter.format(price.amount)
+      }
+      if (compareAtPrice?.amount) {
+        formattedComparePrice = priceFormatter.format(compareAtPrice.amount)
+      }
+      return {
+        price: formattedPrice,
+        comparePrice: formattedComparePrice
+          ? formattedComparePrice
+          : formattedPrice,
+      }
+    } else {
+      return {
+        price: price?.amount,
+        comparePrice: compareAtPrice?.amount,
       }
     }
-    if (variantPrices) {
-      const { price, compareAtPrice } = variantPrices
-      let formattedPrice
-      let formattedComparePrice
-      // Formats prices currency format, supports multi-currency
-      const priceFormatter = new Intl.NumberFormat(
-        clientSettings.defaultRegion,
-        {
-          style: 'currency',
-          currency: clientSettings.defaultCurrency,
-          maximumSignificantDigits: 4, // Trim any zeros after decimal
-        }
-      )
-      if (formatToCurrency) {
-        if (price?.amount) {
-          formattedPrice = priceFormatter.format(price.amount)
-        }
-        if (compareAtPrice?.amount) {
-          formattedComparePrice = priceFormatter.format(compareAtPrice.amount)
-        }
-        return {
-          price: formattedPrice,
-          comparePrice: formattedComparePrice
-            ? formattedComparePrice
-            : formattedPrice,
-        }
-      } else {
-        return {
-          price: price?.amount,
-          comparePrice: compareAtPrice?.amount,
-        }
-      }
-    }
+    // }
   }
   // Render product variant pricing
   const createPrices = function (variant, container) {
     if (variant && container) {
       // If it's a single variant product
       const singleVariant = variant.length === 1
+      console.log(variant)
       const formattedPrices = formatPrices(variant)
       const numericPrices = formatPrices(variant, false)
       const discountType = upsellSettings?.discountType
@@ -1030,7 +1028,7 @@ let offerSettings
               .map((option) => option.name)
             const colorOptions = getOptionValues(product, 'color')
             const bundleOptions = getOptionValues(product, 'bundle')
-            const singleVariant = product?.variants?.length === 1
+            const singleVariant = product?.variants?.edges?.length === 1
             // Create a new array that contains the product variants grouped by unit options
             let optionsAndVariants = []
             if (unitOptions?.length) {
@@ -1069,6 +1067,7 @@ let offerSettings
                 self.data('optionsAndVariants', optionsAndVariants)
             }
           }
+          console.log('DATA', self.data())
         })
         .catch((error) => console.log("Couldn't fetch product: ", error))
     }
@@ -1426,9 +1425,8 @@ let offerSettings
       variantId
     )[0]
     const pattern = /\/([0-9]+)[^\/]*$/
-    const productVariantShopifyId = pattern.exec(
-      atob(self.data('product')?.id)
-    )[1]
+    console.log(self.data('product'))
+    const productVariantShopifyId = pattern.exec(self.data('product')?.id)[1]
     const qty = parseInt(self.find('.qtySelector').val(), 10)
     if (typeof fbq !== 'undefined') {
       fbq('track', 'AddToCart', {
