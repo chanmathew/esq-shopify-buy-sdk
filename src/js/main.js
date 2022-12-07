@@ -24,10 +24,11 @@ let offerSettings
         domain: 'esqido.com',
         storefrontAccessToken: '05f86644045cc5fc6cc10718814e3f31',
         productHandle: 'companion-lash-glue-1',
-        defaultOption: '3 Bottles',
+        defaultOption: '2-Liners',
         defaultCurrency: 'USD',
         defaultRegion: 'en-US',
         disableCartDrawer: false,
+        defaultColor: 'Black',
       },
       options
     )
@@ -134,15 +135,17 @@ let offerSettings
         })
       }
     }
-    const createColors = function (productOption) {
+    const createColors = function (defaultOption) {
       const optionsAndVariants = self.data('optionsAndVariants')
       const colorOptions = self.data('colorOptions')
+      console.log(colorOptions, defaultOption)
       // Only render color swatches if it has color variants
-      if (colorOptions && productOption) {
+      if (colorOptions && defaultOption) {
         // Find the variants for the matching option
         const variants = optionsAndVariants.filter(
-          (variant) => variant.name === productOption
+          (variant) => variant.name === defaultOption
         )[0]?.variants
+
         // Append new container for productVariants
         const optionsContainer = self.find('.productOptions')
         const variantContainer = self.find('.productVariants')
@@ -304,14 +307,10 @@ let offerSettings
       const colorOptions = self.data('colorOptions')
       if (colorOptions?.length) {
         const selectedUnit = self.find('.unit-option:checked').data('value')
-        let selectedColor = self.find('.variant-option:checked').data('value')
-        if (selectedColor === 'black-brown') {
-          selectedColor = '1 x Black, 1 x Brown'
-        } else {
-          selectedColor =
-            selectedColor.substring(0, 1).toUpperCase() +
-            selectedColor.substring(1, selectedColor.length)
-        }
+        let selectedColor = self
+          .find('.variant-option:checked')
+          .data('value')
+          .replace('-', ', ')
         self
           .find('.currentSelectedVariant span')
           .text(`${selectedUnit} - ${selectedColor}`)
@@ -908,7 +907,6 @@ let offerSettings
     if (variant && container) {
       // If it's a single variant product
       const singleVariant = variant.length === 1
-      console.log(variant)
       const formattedPrices = formatPrices(variant)
       const numericPrices = formatPrices(variant, false)
       const discountType = upsellSettings?.discountType
@@ -978,7 +976,7 @@ let offerSettings
     }
   }
   const getOptionValues = function (product, name) {
-    if (product?.options) {
+    if (product?.options?.length) {
       const productOptions = product.options.filter(
         (option) => option.name.toLowerCase() === name
       )

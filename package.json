@@ -1,6 +1,6 @@
 {
   "name": "static-html-webpack-boilerplate",
-  "version": "0.7.11",
+  "version": "0.7.12",
   "description": "Modern tooling for old-school static webpage development",
   "main": "index.js",
   "scripts": {
